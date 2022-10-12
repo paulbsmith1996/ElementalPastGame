@@ -22,7 +22,5 @@ namespace ElementalPastGame.TileManagement
         public void Unload();
 
         public Boolean isCollidable { get; set; }
-
-        public static double DebugTimeSpentLoadingPerRunLoop { get; set; }
     }
 }

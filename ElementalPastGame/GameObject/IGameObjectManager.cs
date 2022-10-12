@@ -36,5 +36,14 @@ namespace ElementalPastGame.GameObject
         public void GameObjectDidUpdate(IGameObjectModel gameObject);
 
         public Boolean ValidateNewGameObjectPosition(IGameObjectModel gameObject, Location newLocation);
+
+        public bool isAnimating { get; }
+        public int CenterX { get; set; }
+        public int CenterY { get; set; }
+
+        public int PreviousCenterX { get; set; }
+        public int PreviousCenterY { get; set; }
+
+        public int FramesAnimated { get; }
     }
 }

@@ -15,11 +15,6 @@ namespace ElementalPastGame.Rendering
 
         public List<Bitmap> Bitmaps { get; set; }
 
-        /// <summary>
-        /// This ModelID has to be unique for every single instance of every single GameObject / renderable entity (even textures)
-        /// </summary>
-        public String ModelID { get; set; }
-
         // More for test than anything else
         public Color? BackgroundColor { get; set; }
 

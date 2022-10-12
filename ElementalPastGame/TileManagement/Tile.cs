@@ -34,7 +34,6 @@ namespace ElementalPastGame.TileManagement
 
         public void Load()
         {
-            DateTime startLoadTime = DateTime.Now;
             if (this.Images.Count > 0)
             {
                 return;
@@ -52,8 +51,6 @@ namespace ElementalPastGame.TileManagement
 
                 this.TileLoadState = TileLoadState.Loaded;
             }
-            DateTime endLoadTime = DateTime.Now;
-            ITile.DebugTimeSpentLoadingPerRunLoop += (endLoadTime - startLoadTime).TotalMilliseconds;
         }
 
         public void Unload()

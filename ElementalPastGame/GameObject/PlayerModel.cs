@@ -14,7 +14,7 @@ namespace ElementalPastGame.GameObject
 
         internal int cyclesSinceLastMove = 0;
 
-        public PlayerModel(IGameObjectManager gameObjectManager) : base("PlayerEntityID", gameObjectManager)
+        public PlayerModel(IGameObjectManager gameObjectManager) : base("", 0, 0)
         {
             GameObjectSize size = new()
             {
@@ -28,10 +28,9 @@ namespace ElementalPastGame.GameObject
                 Y = 10
             };
             this.Location = initialLocation;
-            this.ImageID = CommonConstants.PLAYER_IMAGE_ID;
             this.IsCollidable = true;
 
-            gameObjectManager.GameObjectDidUpdate(this);
+            //gameObjectManager.GameObjectDidUpdate(this);
         }
 
         public void HandlePressedKeys(List<Keys> keyCodes)
@@ -74,13 +73,13 @@ namespace ElementalPastGame.GameObject
 
             cyclesSinceLastMove = 0;
 
-            if (!this.gameObjectManager.ValidateNewGameObjectPosition(this, newLocation))
-            {
-                return;
-            }
+        //    if (!this.gameObjectManager.ValidateNewGameObjectPosition(this, newLocation))
+        //    {
+        //        return;
+        //    }
 
-            this.Location = newLocation;
-            this.gameObjectManager.GameObjectDidUpdate(this);
+        //    this.Location = newLocation;
+        //    this.gameObjectManager.GameObjectDidUpdate(this);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using ElementalPastGame.GameObject.Obstacles;
-using ElementalPastGame.Resources.Textures;
+﻿using ElementalPastGame.Resources.Textures;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,12 +17,14 @@ namespace ElementalPastGame.TileManagement.Utility
         public static String Blank = "Blank";
         public static String Grass = "Grass";
         public static String Fence = "Fence";
+        public static String Goblin = "Goblin";
 
         public static Dictionary<String, Bitmap> Mapping = new Dictionary<String, Bitmap>() {
-            { Dirt, new Bitmap(TexturesLocation + "Dirt.png") },
-            { Grass, new Bitmap(TexturesLocation + "Grass.png") },
             { Blank, new Bitmap(TexturesLocation + "Blank.png") },
-            { Fence, new Bitmap(TexturesLocation + "Fence.png")}
+            { Dirt, new Bitmap(TexturesLocation + "Dirt.png") },
+            { Fence, new Bitmap(TexturesLocation + "Fence.png") },
+            { Goblin, new Bitmap(TexturesLocation + "Goblin.png") },
+            { Grass, new Bitmap(TexturesLocation + "Grass.png") },
         };
     }
 }

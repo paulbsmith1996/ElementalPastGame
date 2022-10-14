@@ -1,5 +1,5 @@
 ﻿using ElementalPastGame.Common;
-using ElementalPastGame.GameObject.Obstacles;
+using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.TileManagement;
@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -18,8 +19,8 @@ namespace ElementalPastGame.GameObject
         internal static GameObjectManager? _instance;
         internal List<IGameObjectModel> gameObjects = new();
         internal IPictureBoxManager pictureBoxManager;
-        internal PlayerModel PlayerModel;
         internal IActiveTileSetManager activeTileSetManager;
+        internal IActiveEntityManager activeEntityManager;
 
         internal bool _isAnimating;
         public bool isAnimating { get { return _isAnimating; } set { _isAnimating = value; } }
@@ -56,35 +57,13 @@ namespace ElementalPastGame.GameObject
             this.activeTileSetManager = ActiveTileSetManager.GetInstance();
 
             this.pictureBoxManager = pictureBoxManager;
-            this.PlayerModel = new PlayerModel(this);
-            this.AddActiveGameObject(this.PlayerModel);
-
-            Location fenceLocation = new()
-            {
-                X = 15,
-                Y = 10
-            };
-            WoodenFenceHorizontal testFence = new(fenceLocation, "WoodenFence1_1", this);
-            this.AddActiveGameObject(testFence);
+            this.activeEntityManager = ActiveEntityManager.GetInstance();
             
             IKeyEventPublisher keyEventPublisher = KeyEventPublisher.GetInstance();
             keyEventPublisher.AddIKeyEventSubscriber(this);
-        }
 
-        public void AddActiveGameObject(IGameObjectModel gameObject)
-        {
-            this.gameObjects.Add(gameObject);
-            RenderingModel gameObjectRenderingModel = CreateRenderingModelForGameObject(gameObject);
-        }
-
-        public void RemoveActiveGameObject(IGameObjectModel gameObject)
-        {
-            this.gameObjects.Remove(gameObject);
-        }
-
-        public void GameObjectDidUpdate(IGameObjectModel gameObject)
-        {
-            
+            // TODO: probably remove this line later
+            this.pictureBoxManager.Redraw();
         }
 
         public Boolean ValidateNewGameObjectPosition(IGameObjectModel gameObject, Location newLocation)
@@ -104,34 +83,29 @@ namespace ElementalPastGame.GameObject
             return true;
         }
 
-        internal static RenderingModel CreateRenderingModelForGameObject(IGameObjectModel gameObjectModel)
-        {
-            // TODO: cache these rendering models so that we don't recreate a new one on every update
-            RenderingModel renderingModel = new();
-            renderingModel.X = gameObjectModel.Location.X * CommonConstants.TILE_DIMENSION;
-            renderingModel.Y = gameObjectModel.Location.Y * CommonConstants.TILE_DIMENSION;
-            renderingModel.Width = gameObjectModel.Size.Width * CommonConstants.TILE_DIMENSION;
-            renderingModel.Height = gameObjectModel.Size.Height * CommonConstants.TILE_DIMENSION;
-
-            // TODO: remove this background color setting and set the image instead
-            renderingModel.BackgroundColor = Color.Blue;
-
-            return renderingModel;
-        }
-
         // IKeyEventSubscriber
         public void HandlePressedKeys(List<Keys> keyCodes)
         {
-            if (this.isAnimating)
+            double offset = 0;
+            if (isAnimating)
             {
+                offset = 1.0 - ((double)this.FramesAnimated / GameObjectManager.FRAMES_PER_ANIMATION);
+
+                int diffY = PreviousCenterY - CenterY;
+                int diffX = PreviousCenterX - CenterX;
+
+                double animationXOffset = diffX * offset;
+                double animationYOffset = diffY * offset;
                 this.FramesAnimated++;
+
                 if (this.FramesAnimated > GameObjectManager.FRAMES_PER_ANIMATION)
                 {
                     this.FramesAnimated = 1;
                     this.isAnimating = false;
                 }
-                this.UpdateBackgroundWithInput(null);
-                this.UpdateForegroundWithInput(keyCodes);
+                this.UpdateBackgroundWithInput(offset);
+                this.UpdateForegroundWithInput(PreviousCenterX, PreviousCenterY, animationXOffset, animationYOffset);
+                this.pictureBoxManager.Redraw();
                 return;
             }
 
@@ -185,36 +159,41 @@ namespace ElementalPastGame.GameObject
             }
 
             DateTime DebugBeginUpdatingBackgroundTime = DateTime.Now;
-            this.UpdateBackgroundWithInput(keyCodes.Last());
+            this.UpdateBackgroundWithInput(offset);
             DateTime DebugEndUpdatingBackground = DateTime.Now;
-            this.UpdateForegroundWithInput(keyCodes);
+            this.UpdateForegroundWithInput(this.CenterX, this.CenterY, 0.0, 0.0);
             double DebugTimeToUpdateBackground = (DebugEndUpdatingBackground - DebugBeginUpdatingBackgroundTime).TotalMilliseconds;
             Debug.WriteLine("Updating background took: " + DebugTimeToUpdateBackground + "ms");
+            //this.pictureBoxManager.Redraw();
         }
 
-        internal void UpdateBackgroundWithInput(Keys? key)
+        internal void UpdateBackgroundWithInput(double offset)
         {
-            this.activeTileSetManager.HandleKeyInput(key);
+            this.activeTileSetManager.Update(this.PreviousCenterX, this.PreviousCenterY, this.CenterX, this.CenterY, this.isAnimating, offset);
 
-                // TODO: this is suppoed to represent the player so def move it out of here
-                Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
-                List<Bitmap> blankBitmapList = new List<Bitmap>();
-                blankBitmapList.Add(BlankBitmap);
-                RenderingModel playerModel = new()
-                {
-                    X = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
-                    Y = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
-                    Width = CommonConstants.TILE_DIMENSION,
-                    Height = CommonConstants.TILE_DIMENSION,
-                    Bitmaps = blankBitmapList,
-                };
+            // TODO: this is suppoed to represent the player so def move it out of here
+            Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
+            List<Bitmap> blankBitmapList = new List<Bitmap>();
+            blankBitmapList.Add(BlankBitmap);
+            RenderingModel playerModel = new()
+            {
+                X = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
+                Y = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
+                Width = CommonConstants.TILE_DIMENSION,
+                Height = CommonConstants.TILE_DIMENSION,
+                Bitmaps = blankBitmapList,
+            };
 
-                this.pictureBoxManager.UpdateBitmapForIRenderingModel(playerModel);
+            this.pictureBoxManager.UpdateBitmapForIRenderingModel(playerModel);
         }
 
-        internal void UpdateForegroundWithInput(List<Keys> keyCodes)
+        internal void UpdateForegroundWithInput(int XBasis, int YBasis, double animationXOffset, double animationYOffset)
         {
-
+            foreach (IGameObjectModel gameObjectModel in this.activeEntityManager.GetActiveEntities(this.CenterX, this.CenterY))
+            {
+                RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, XBasis, YBasis, animationXOffset, animationYOffset);
+                this.pictureBoxManager.UpdateBitmapForIRenderingModel(renderingModel);
+            }
         }
 
         internal Boolean ValidateNewLocation(int X, int Y)
@@ -226,6 +205,29 @@ namespace ElementalPastGame.GameObject
             }
 
             return !newTile.isCollidable;
+        }
+
+        internal RenderingModel CreateRenderingModelForGameObject(IGameObjectModel gameObjectModel, int XBasis, int YBasis, double animationXOffset, double animationYOffset)
+        {
+            double gameObjectTileX = (double)(XBasis + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.X - animationXOffset) * CommonConstants.TILE_DIMENSION;
+            double gameObjectTileY = (double)(YBasis + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.Y - animationYOffset) * CommonConstants.TILE_DIMENSION;
+
+            List<Bitmap> bitmaps = new();
+            if (gameObjectModel.Image != null) {
+                Bitmap bitmap = new Bitmap((Bitmap)gameObjectModel.Image, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
+                bitmaps.Add(bitmap);
+            }
+
+            RenderingModel renderingModel = new()
+            {
+                X = (int)gameObjectTileX,
+                Y = (int)gameObjectTileY,
+                Width = CommonConstants.TILE_DIMENSION,
+                Height = CommonConstants.TILE_DIMENSION,
+                Bitmaps = bitmaps
+            };
+
+            return renderingModel;
         }
     }
 }

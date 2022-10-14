@@ -1,5 +1,6 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.Utility;
+using ElementalPastGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,13 +36,18 @@ namespace ElementalPastGame.GameObject
         /// interface. For example, there should be a "player image ID" in the CommonConstants
         /// class or a "goblin image ID".
         /// </summary>
-        public String? ImageID { get; set; }
+        public String ImageID { get; set; }
+
+        public Image? Image { get; set; }
 
         /// <summary>
-        /// This EntityID must be unique for the GameObject in its tile. It is eventually used 
-        /// to identify the rendering model corresponding to the correct PictureBox in the 
-        /// IPictureBoxManager.
+        /// This EntityID must be unique for every GameObject. It is eventually used 
+        /// to identify the IGameObjectModel when deciding if it should be removed from the
+        /// overworld.
         /// </summary>
-        public String EntityID { get; set; }
+        public long EntityID { get; set; }
+
+        public void LoadIfNeeded();
+        public void Unload();
     }
 }

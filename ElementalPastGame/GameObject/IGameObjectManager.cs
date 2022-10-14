@@ -22,19 +22,6 @@ namespace ElementalPastGame.GameObject
         /// <exception cref="NotImplementedException"></exception>
         public static IGameObjectManager getInstance() => throw new NotImplementedException();
 
-        public void AddActiveGameObject(IGameObjectModel gameObject);
-        public void RemoveActiveGameObject(IGameObjectModel gameObject);
-
-        /// <summary>
-        /// The call to GameObjectDidUpdate will cause the IGameObjectManager to call up to the
-        /// IPictureBoxManager to tell it one of its IGameObjectModels updated. Ideally, this
-        /// method will not be called frequently. All IGameObjectModels should have a reference
-        /// to an instance of the IGameObjectManager and call this method when their models are
-        /// updated.
-        /// </summary>
-        /// <param name="gameObject"></param>
-        public void GameObjectDidUpdate(IGameObjectModel gameObject);
-
         public Boolean ValidateNewGameObjectPosition(IGameObjectModel gameObject, Location newLocation);
 
         public bool isAnimating { get; }

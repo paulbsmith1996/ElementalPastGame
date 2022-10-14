@@ -9,6 +9,7 @@ namespace ElementalPastGame.GameObject.Utility
 {
     public static class GameObjectConstants
     {
-        public static int PLAYER_SPEED = 8;
+        public static int MOVEMENT_ANIMATION_LENGTH = 10;
+
     }
 }

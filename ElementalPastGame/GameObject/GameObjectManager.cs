@@ -31,7 +31,6 @@ namespace ElementalPastGame.GameObject
         public int PreviousCenterY { get; set; }
 
         public int FramesAnimated { get; set; }
-        internal static int FRAMES_PER_ANIMATION = 4;
 
         internal static ITileMapManager TextureMapManager = TileMapManager.GetInstance();
 
@@ -89,85 +88,98 @@ namespace ElementalPastGame.GameObject
             double offset = 0;
             if (isAnimating)
             {
-                offset = 1.0 - ((double)this.FramesAnimated / GameObjectManager.FRAMES_PER_ANIMATION);
+                offset = 1.0 - ((double)this.FramesAnimated / GameObjectConstants.MOVEMENT_ANIMATION_LENGTH);
 
-                int diffY = PreviousCenterY - CenterY;
-                int diffX = PreviousCenterX - CenterX;
+                int diffY = CenterY - PreviousCenterY;
+                int diffX = CenterX - PreviousCenterX;
 
                 double animationXOffset = diffX * offset;
                 double animationYOffset = diffY * offset;
                 this.FramesAnimated++;
 
-                if (this.FramesAnimated > GameObjectManager.FRAMES_PER_ANIMATION)
+                if (this.FramesAnimated > GameObjectConstants.MOVEMENT_ANIMATION_LENGTH)
                 {
                     this.FramesAnimated = 1;
                     this.isAnimating = false;
                 }
-                this.UpdateBackgroundWithInput(offset);
-                this.UpdateForegroundWithInput(PreviousCenterX, PreviousCenterY, animationXOffset, animationYOffset);
+                this.UpdateBackgroundWithOffset(offset);
+                this.UpdateForegroundWithOffset(animationXOffset, animationYOffset);
                 this.pictureBoxManager.Redraw();
                 return;
             }
 
-            if (keyCodes.Count == 0)
+            if (keyCodes.Count > 0)
             {
-                return;
+                Keys lastKey = keyCodes.Last();
+                if (this.ValidateProposedNewLocationForKey(lastKey))
+                {
+                    this.HandleInputKey(keyCodes.Last());
+                    this.UpdateBackgroundWithOffset(1.0);
+                    this.UpdateForegroundWithOffset(this.CenterX - this.PreviousCenterX, this.CenterY - this.PreviousCenterY);
+                }
+                else
+                {
+                    this.UpdateBackgroundWithOffset(0.0);
+                    this.UpdateForegroundWithOffset(0.0, 0.0);
+                }
             }
+            else
+            {
+                this.UpdateBackgroundWithOffset(0.0);
+                this.UpdateForegroundWithOffset(0.0, 0.0);
+            }
+            this.pictureBoxManager.Redraw();
+        }
 
-            switch (keyCodes.Last())
+        internal void HandleInputKey(Keys? key)
+        {
+            switch (key)
             {
                 case Keys.Left:
-                    if (!this.ValidateNewLocation(this.CenterX + 1, this.CenterY))
-                    {
-                        return;
-                    }
                     this.PreviousCenterX = this.CenterX;
                     this.PreviousCenterY = this.CenterY;
                     this.isAnimating = true;
                     this.CenterX++;
                     break;
                 case Keys.Right:
-                    if (!this.ValidateNewLocation(this.CenterX - 1, this.CenterY))
-                    {
-                        return;
-                    }
                     this.PreviousCenterX = this.CenterX;
                     this.PreviousCenterY = this.CenterY;
                     this.isAnimating = true;
                     this.CenterX--;
                     break;
                 case Keys.Up:
-                    if (!this.ValidateNewLocation(this.CenterX, this.CenterY + 1))
-                    {
-                        return;
-                    }
                     this.PreviousCenterX = this.CenterX;
                     this.PreviousCenterY = this.CenterY;
                     this.isAnimating = true;
                     this.CenterY++;
                     break;
                 case Keys.Down:
-                    if (!this.ValidateNewLocation(this.CenterX, this.CenterY - 1))
-                    {
-                        return;
-                    }
                     this.PreviousCenterX = this.CenterX;
                     this.PreviousCenterY = this.CenterY;
                     this.isAnimating = true;
                     this.CenterY--;
                     break;
             }
-
-            DateTime DebugBeginUpdatingBackgroundTime = DateTime.Now;
-            this.UpdateBackgroundWithInput(offset);
-            DateTime DebugEndUpdatingBackground = DateTime.Now;
-            this.UpdateForegroundWithInput(this.CenterX, this.CenterY, 0.0, 0.0);
-            double DebugTimeToUpdateBackground = (DebugEndUpdatingBackground - DebugBeginUpdatingBackgroundTime).TotalMilliseconds;
-            Debug.WriteLine("Updating background took: " + DebugTimeToUpdateBackground + "ms");
-            //this.pictureBoxManager.Redraw();
         }
 
-        internal void UpdateBackgroundWithInput(double offset)
+        internal bool ValidateProposedNewLocationForKey(Keys key)
+        {
+            switch (key)
+            {
+                case Keys.Left:
+                    return this.ValidateNewLocation(this.CenterX + 1, this.CenterY);
+                case Keys.Right:
+                    return this.ValidateNewLocation(this.CenterX - 1, this.CenterY);
+                case Keys.Up:
+                    return this.ValidateNewLocation(this.CenterX, this.CenterY + 1);
+                case Keys.Down:
+                    return this.ValidateNewLocation(this.CenterX, this.CenterY - 1);                    
+            }
+
+            return true;
+        }
+
+        internal void UpdateBackgroundWithOffset(double offset)
         {
             this.activeTileSetManager.Update(this.PreviousCenterX, this.PreviousCenterY, this.CenterX, this.CenterY, this.isAnimating, offset);
 
@@ -187,11 +199,12 @@ namespace ElementalPastGame.GameObject
             this.pictureBoxManager.UpdateBitmapForIRenderingModel(playerModel);
         }
 
-        internal void UpdateForegroundWithInput(int XBasis, int YBasis, double animationXOffset, double animationYOffset)
+        internal void UpdateForegroundWithOffset(double animationXOffset, double animationYOffset)
         {
             foreach (IGameObjectModel gameObjectModel in this.activeEntityManager.GetActiveEntities(this.CenterX, this.CenterY))
             {
-                RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, XBasis, YBasis, animationXOffset, animationYOffset);
+                gameObjectModel.UpdateModelForNewRunloop();
+                RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, animationXOffset, animationYOffset);
                 this.pictureBoxManager.UpdateBitmapForIRenderingModel(renderingModel);
             }
         }
@@ -207,10 +220,11 @@ namespace ElementalPastGame.GameObject
             return !newTile.isCollidable;
         }
 
-        internal RenderingModel CreateRenderingModelForGameObject(IGameObjectModel gameObjectModel, int XBasis, int YBasis, double animationXOffset, double animationYOffset)
+        internal RenderingModel CreateRenderingModelForGameObject(IGameObjectModel gameObjectModel, double animationXOffset, double animationYOffset)
         {
-            double gameObjectTileX = (double)(XBasis + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.X - animationXOffset) * CommonConstants.TILE_DIMENSION;
-            double gameObjectTileY = (double)(YBasis + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.Y - animationYOffset) * CommonConstants.TILE_DIMENSION;
+
+            double gameObjectTileX = (double)(this.CenterX + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.X - gameObjectModel.XAnimationOffset - animationXOffset) * CommonConstants.TILE_DIMENSION;
+            double gameObjectTileY = (double)(this.CenterY + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.Y - gameObjectModel.YAnimationOffset - animationYOffset) * CommonConstants.TILE_DIMENSION;
 
             List<Bitmap> bitmaps = new();
             if (gameObjectModel.Image != null) {

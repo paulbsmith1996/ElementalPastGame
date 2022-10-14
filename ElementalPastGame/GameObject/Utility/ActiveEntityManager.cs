@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ElementalPastGame.GameObject.IGameObjectModel;
 
 namespace ElementalPastGame.GameObject.Utility
 {
@@ -59,6 +60,9 @@ namespace ElementalPastGame.GameObject.Utility
         internal void LoadEntitiesByLocation()
         {
             IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X, CommonConstants.GAME_START_LOCATION.Y + 10);
+            List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
+            goblin1.shouldCycleMoves = true;
+            goblin1.Moves = goblin1Moves;
             this.AddEntityToMapping(goblin1);
         }
 

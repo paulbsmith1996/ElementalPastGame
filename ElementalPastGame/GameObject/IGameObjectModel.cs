@@ -16,6 +16,15 @@ namespace ElementalPastGame.GameObject
     /// </summary>
     public interface IGameObjectModel
     {
+        enum Direction
+        {
+            Up,
+            Down,
+            Left,
+            Right,
+            None
+        }
+
         /// <summary>
         ///  This location is not the actual location where the GameObject gets rendered. This is
         ///  the local Location on the current tile.
@@ -46,8 +55,14 @@ namespace ElementalPastGame.GameObject
         /// overworld.
         /// </summary>
         public long EntityID { get; set; }
-
+        public double XAnimationOffset { get; }
+        public double YAnimationOffset { get; }
+        public List<Direction> Moves { get; set; }
+        public bool shouldCycleMoves { get; set; }
+        
         public void LoadIfNeeded();
         public void Unload();
+        public void MoveTo(int NewX, int NewY, bool animated);
+        public void UpdateModelForNewRunloop();
     }
 }

@@ -36,7 +36,7 @@ namespace ElementalPastGame.GameObject.Utility
             {
                 for (int YCoordinate = CenterY - CommonConstants.TILE_VIEW_DISTANCE - 1; YCoordinate <= CenterY + CommonConstants.TILE_VIEW_DISTANCE + 1; YCoordinate++)
                 {
-                    Location location = new Location() { X = XCoordinate, Y = YCoordinate };
+                    Location location = new() { X = XCoordinate, Y = YCoordinate };
                     IGameObjectModel? gameObjectModel = this.EntitiesByLocation.GetValueOrDefault(location);
                     if (gameObjectModel != null)
                     {
@@ -53,16 +53,29 @@ namespace ElementalPastGame.GameObject.Utility
             this.previousActiveEntityModels = activeEntities;
             return activeEntities;
         }
+
+        public void RemoveGameObjectFromLocation(IGameObjectModel gameObjectModel, Location location)
+        {
+            // TODO: This needs to be updated once several game objects can be in the same location
+            this.EntitiesByLocation.Remove(location);
+        }
+
+        public void AddGameObjectToLocation(IGameObjectModel gameObjectModel, Location location)
+        {
+            this.AddEntityToMapping(gameObjectModel);
+        }
+
         internal ActiveEntityManager()
         {
             this.LoadEntitiesByLocation();
         }
         internal void LoadEntitiesByLocation()
         {
-            IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X, CommonConstants.GAME_START_LOCATION.Y + 10);
+            IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X - 10, CommonConstants.GAME_START_LOCATION.Y);
             List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
             goblin1.shouldCycleMoves = true;
             goblin1.Moves = goblin1Moves;
+            goblin1.movementType = MovementType.Aggressive;
             this.AddEntityToMapping(goblin1);
         }
 

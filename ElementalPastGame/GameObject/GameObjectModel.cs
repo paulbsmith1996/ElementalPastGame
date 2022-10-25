@@ -27,12 +27,16 @@ namespace ElementalPastGame.GameObject
 
         internal int framesAnimated { get; set; }
         internal bool isAnimating { get; set; }
+        public MovementType movementType { get; set; }
         public List<Direction> Moves { get; set; }
         public bool shouldCycleMoves { get; set; }
         internal int currentMoveIndex = 0;
-        
-        public GameObjectModel(String ImageID, int X, int Y)
+        internal int runloopsSinceLastAggressiveMove = 0;
+
+
+        public GameObjectModel(String ImageID, int X, int Y, MovementType movementType = MovementType.Wander)
         {
+            this.movementType = movementType;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
             this.ImageID = ImageID;
@@ -63,24 +67,39 @@ namespace ElementalPastGame.GameObject
                 Y = NewY,
             };
 
+            Location previousLocation = this.Location;
+
             if (isAnimated)
             {
-                Location previousLocation = this.Location;
                 this.isAnimating = true;
-                this.XAnimationOffset = previousLocation.X - newLocation.X;
-                this.YAnimationOffset = previousLocation.Y - newLocation.Y;
             }
+
+            if (!GameObjectManager.getInstance().ValidateNewGameObjectPosition(this, newLocation))
+            {
+                return;
+            }
+
+            IActiveEntityManager activeEntityManager = ActiveEntityManager.GetInstance();
+            activeEntityManager.RemoveGameObjectFromLocation(this, previousLocation);
             this.Location = newLocation;
+            activeEntityManager.AddGameObjectToLocation(this, newLocation);
         }
 
         public void UpdateModelForNewRunloop()
         {
             if (!this.isAnimating)
             {
+                Location previousLocation = this.Location;
                 this.PerformNextMove();
+                this.XAnimationOffset = previousLocation.X - this.Location.X;
+                this.YAnimationOffset = previousLocation.Y - this.Location.Y;
                 return;
             }
-            this.framesAnimated++;
+            else
+            {
+                this.framesAnimated++;
+            }
+
             if (this.framesAnimated >= GameObjectConstants.MOVEMENT_ANIMATION_LENGTH)
             {
                 this.framesAnimated = 0;
@@ -96,6 +115,21 @@ namespace ElementalPastGame.GameObject
 
         internal void PerformNextMove()
         {
+            switch (this.movementType)
+            {
+                case MovementType.SetMoves:
+                    this.PerformNextPresetMove();
+                    break;
+                case MovementType.Aggressive:
+                    this.MoveTowardsCenter();
+                    break;
+                case MovementType.Wander:
+                    break;
+            }
+        }
+
+        internal void PerformNextPresetMove()
+        {
             if (this.Moves.Count == 0 || (this.currentMoveIndex >= this.Moves.Count && !this.shouldCycleMoves))
             {
                 return;
@@ -106,25 +140,76 @@ namespace ElementalPastGame.GameObject
                 this.currentMoveIndex = 0;
             }
 
-            int previousX = this.Location.X;
-            int previousY = this.Location.Y;
-            switch(this.Moves.ElementAt(this.currentMoveIndex))
+            int newX = this.Location.X;
+            int newY = this.Location.Y;
+
+            switch (this.Moves.ElementAt(this.currentMoveIndex))
             {
                 case Direction.Up:
-                    this.MoveTo(previousX, previousY + 1, true);
+                    newY++;
                     break;
                 case Direction.Down:
-                    this.MoveTo(previousX, previousY - 1, true);
+                    newY--;
                     break;
                 case Direction.Left:
-                    this.MoveTo(previousX - 1, previousY, true);
+                    newX--;
                     break;
                 case Direction.Right:
-                    this.MoveTo(previousX + 1, previousY, true);
+                    newX++;
                     break;
             }
 
+            this.MoveTo(newX, newY, true);
             this.currentMoveIndex++;
+        }
+
+        internal void MoveTowardsCenter()
+        {
+            if (this.runloopsSinceLastAggressiveMove > 0)
+            {
+                if (this.runloopsSinceLastAggressiveMove < GameObjectConstants.AGGRESSIVE_MOVEMENT_LEEWAY_CYCLES)
+                {
+                    this.runloopsSinceLastAggressiveMove++;
+                    return;
+                }
+                else
+                {
+                    this.runloopsSinceLastAggressiveMove = 0;
+                }
+            }
+
+            IGameObjectManager gom = GameObjectManager.getInstance();
+            int diffX = this.Location.X - gom.CenterX;
+            int diffY = this.Location.Y - gom.CenterY;
+
+            int newX = this.Location.X;
+            int newY = this.Location.Y;
+
+            if (Math.Abs(diffX) > Math.Abs(diffY))
+            {
+                if (diffX < 0)
+                {
+                    newX++;
+                }
+                else
+                {
+                    newX--;
+                }
+            }
+            else
+            {
+                if (diffY < 0)
+                {
+                    newY++;
+                }
+                else
+                {
+                    newY--;
+                }
+            }
+
+            this.MoveTo(newX, newY, true);
+            this.runloopsSinceLastAggressiveMove++;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElementalPastGame.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,5 +17,8 @@ namespace ElementalPastGame.GameObject.Utility
         /// <param name="CenterY">The y corrdinate of the player's location</param>
         /// <returns></returns>
         public List<IGameObjectModel> GetActiveEntities(int CenterX, int CenterY);
+
+        public void RemoveGameObjectFromLocation(IGameObjectModel gameObjectModel, Location location);
+        public void AddGameObjectToLocation(IGameObjectModel gameObjectModel, Location location);
     }
 }

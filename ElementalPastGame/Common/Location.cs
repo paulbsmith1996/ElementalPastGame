@@ -11,5 +11,15 @@ namespace ElementalPastGame.Common
     {
         public int X { get; set; }
         public int Y { get; set; }
+
+        public override bool Equals(object? obj)
+        {
+            if (!(obj is Location))
+                return false;
+
+            Location newLocation = (Location)obj;
+            // compare elements here
+            return newLocation.X == this.X && newLocation.Y == this.Y;
+        }
     }
 }

@@ -25,12 +25,19 @@ namespace ElementalPastGame.GameObject
             None
         }
 
+        enum MovementType
+        {
+            Wander,
+            SetMoves,
+            Aggressive
+        }
+
         /// <summary>
         ///  This location is not the actual location where the GameObject gets rendered. This is
         ///  the local Location on the current tile.
         /// </summary>
         public Location Location { get; set; }
-        
+
         /// <summary>
         /// This size, like the Location, does not represent the size of the image of the
         /// GameObject, but rather how many tiles the GameObject should take up (e.g. Size(2,1)
@@ -59,6 +66,7 @@ namespace ElementalPastGame.GameObject
         public double YAnimationOffset { get; }
         public List<Direction> Moves { get; set; }
         public bool shouldCycleMoves { get; set; }
+        public MovementType movementType { get; set; }
         
         public void LoadIfNeeded();
         public void Unload();

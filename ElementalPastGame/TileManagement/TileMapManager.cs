@@ -108,13 +108,24 @@ namespace ElementalPastGame.TileManagement
         // Map setups
         internal void SetUpStartingRegion()
         {
-            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Dirt), 150, 150, 250, 250);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Dirt), 800, 800, 999, 999);
 
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Dirt), 191, 191, 209, 191);
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Dirt), 191, 191, 191, 209);
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Dirt), 209, 191, 209, 220);
-
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Dirt), 180, 220, 209, 220);
+            // Back fence
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Dirt), 910, 890, 910, 920);
+            // Top fence
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 820, 920, 910, 920);
+            // Bottom fence
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 820, 890, 910, 890);
+            // Chunk 1a
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 880, 908, 910, 920);
+            // Chunk 1b
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 850, 906, 870, 910);
+            // Chunk 1e
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 850, 890, 870, 893);
+            // Chunk 1c
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 850, 890, 853, 906);
+            // Chunk 1d
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 840, 900, 843, 920);
         }
     }
 }

@@ -1,4 +1,4 @@
-using ElementalPastGame.GameObject;
+using ElementalPastGame.GameStateManagement;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
 using System.Diagnostics;

@@ -1,4 +1,5 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.TileManagement.Utility;
@@ -74,7 +75,7 @@ namespace ElementalPastGame.GameObject
                 this.isAnimating = true;
             }
 
-            if (!GameObjectManager.getInstance().ValidateNewGameObjectPosition(this, newLocation))
+            if (!OverworldGameStateHandler.getInstance().ValidateNewGameObjectPosition(this, newLocation))
             {
                 return;
             }
@@ -178,9 +179,9 @@ namespace ElementalPastGame.GameObject
                 }
             }
 
-            IGameObjectManager gom = GameObjectManager.getInstance();
-            int diffX = this.Location.X - gom.CenterX;
-            int diffY = this.Location.Y - gom.CenterY;
+            OverworldGameStateHandler ogsh = OverworldGameStateHandler.getInstance();
+            int diffX = this.Location.X - ogsh.CenterX;
+            int diffY = this.Location.Y - ogsh.CenterY;
 
             int newX = this.Location.X;
             int newY = this.Location.Y;

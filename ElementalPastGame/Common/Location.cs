@@ -21,5 +21,10 @@ namespace ElementalPastGame.Common
             // compare elements here
             return newLocation.X == this.X && newLocation.Y == this.Y;
         }
+
+        public override int GetHashCode()
+        {
+            return this.X.GetHashCode() ^ this.Y.GetHashCode();
+        }
     }
 }

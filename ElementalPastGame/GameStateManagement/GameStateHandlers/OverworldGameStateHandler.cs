@@ -1,24 +1,22 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.Utility;
-using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
-using ElementalPastGame.TileManagement;
 using ElementalPastGame.TileManagement.Utility;
+using ElementalPastGame.TileManagement;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
 using System.Threading.Tasks;
+using ElementalPastGame.KeyInput;
+using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 
-namespace ElementalPastGame.GameObject
+namespace ElementalPastGame.GameObject.GameStateHandlers
 {
-    public class GameObjectManager : IGameObjectManager, IKeyEventSubscriber
+    public class OverworldGameStateHandler : IGameStateHandler
     {
-        internal static GameObjectManager? _instance;
-        internal List<IGameObjectModel> gameObjects = new();
-        internal IPictureBoxManager pictureBoxManager;
+        public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
+        internal static OverworldGameStateHandler? _instance;
         internal IActiveTileSetManager activeTileSetManager;
         internal IActiveEntityManager activeEntityManager;
 
@@ -34,18 +32,18 @@ namespace ElementalPastGame.GameObject
 
         internal static ITileMapManager TextureMapManager = TileMapManager.GetInstance();
 
-        public static IGameObjectManager getInstance()
+        public static OverworldGameStateHandler getInstance()
         {
             if (_instance != null)
             {
                 return _instance;
             }
 
-            _instance = new GameObjectManager(PictureBoxManager.GetInstance());
+            _instance = new OverworldGameStateHandler();
             return _instance;
         }
 
-        internal GameObjectManager(IPictureBoxManager pictureBoxManager)
+        internal OverworldGameStateHandler()
         {
             this.CenterX = CommonConstants.GAME_START_LOCATION.X;
             this.CenterY = CommonConstants.GAME_START_LOCATION.Y;
@@ -55,36 +53,20 @@ namespace ElementalPastGame.GameObject
             this.isAnimating = false;
             this.activeTileSetManager = ActiveTileSetManager.GetInstance();
 
-            this.pictureBoxManager = pictureBoxManager;
             this.activeEntityManager = ActiveEntityManager.GetInstance();
-            
-            IKeyEventPublisher keyEventPublisher = KeyEventPublisher.GetInstance();
-            keyEventPublisher.AddIKeyEventSubscriber(this);
 
             // TODO: probably remove this line later
-            this.pictureBoxManager.Redraw();
+            this.RedrawForNonnullDelegate();
         }
 
         public Boolean ValidateNewGameObjectPosition(IGameObjectModel gameObject, Location newLocation)
         {
-            foreach (IGameObjectModel activeGameObject in this.gameObjects)
-            {
-                if (!activeGameObject.IsCollidable)
-                {
-                    continue;
-                }
-                if (activeGameObject.Location.Equals(newLocation))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return !this.activeTileSetManager.isTileCollidable(newLocation.X, newLocation.Y);
         }
 
-        // IKeyEventSubscriber
-        public void HandlePressedKeys(List<Keys> keyCodes)
+        public void HandleKeyInputs(List<Keys> keyCodes)
         {
+            this.UpdateGameState();
             double offset = 0;
             if (isAnimating)
             {
@@ -104,7 +86,7 @@ namespace ElementalPastGame.GameObject
                 }
                 this.UpdateBackgroundWithOffset(offset);
                 this.UpdateForegroundWithOffset(animationXOffset, animationYOffset);
-                this.pictureBoxManager.Redraw();
+                this.RedrawForNonnullDelegate();
                 return;
             }
 
@@ -113,7 +95,7 @@ namespace ElementalPastGame.GameObject
                 Keys lastKey = keyCodes.Last();
                 if (this.ValidateProposedNewLocationForKey(lastKey))
                 {
-                    this.HandleInputKey(keyCodes.Last());
+                    this.HandleOverworldInputKey(keyCodes.Last());
                     this.UpdateBackgroundWithOffset(1.0);
                     this.UpdateForegroundWithOffset(this.CenterX - this.PreviousCenterX, this.CenterY - this.PreviousCenterY);
                 }
@@ -128,10 +110,26 @@ namespace ElementalPastGame.GameObject
                 this.UpdateBackgroundWithOffset(0.0);
                 this.UpdateForegroundWithOffset(0.0, 0.0);
             }
-            this.pictureBoxManager.Redraw();
+
+            this.RedrawForNonnullDelegate();
         }
 
-        internal void HandleInputKey(Keys? key)
+        internal void UpdateGameState ()
+        {
+            foreach (IGameObjectModel gameObjectModel in this.activeEntityManager.GetActiveEntities(this.CenterX, this.CenterY))
+            {
+                if (gameObjectModel.Location.X == this.CenterX && gameObjectModel.Location.Y == this.CenterY)
+                {
+                    if (this.gameStateHandlerDelegate != null)
+                    {
+                        ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Battle);
+                    }
+                    return;
+                }
+            }
+        }
+
+        internal void HandleOverworldInputKey(Keys? key)
         {
             switch (key)
             {
@@ -173,7 +171,7 @@ namespace ElementalPastGame.GameObject
                 case Keys.Up:
                     return this.ValidateNewLocation(this.CenterX, this.CenterY + 1);
                 case Keys.Down:
-                    return this.ValidateNewLocation(this.CenterX, this.CenterY - 1);                    
+                    return this.ValidateNewLocation(this.CenterX, this.CenterY - 1);
             }
 
             return true;
@@ -196,7 +194,7 @@ namespace ElementalPastGame.GameObject
                 Bitmaps = blankBitmapList,
             };
 
-            this.pictureBoxManager.UpdateBitmapForIRenderingModel(playerModel);
+            this.UpdateBitmapForRenderingModelForNonnullDelegate(playerModel);
         }
 
         internal void UpdateForegroundWithOffset(double animationXOffset, double animationYOffset)
@@ -205,7 +203,7 @@ namespace ElementalPastGame.GameObject
             {
                 gameObjectModel.UpdateModelForNewRunloop();
                 RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, animationXOffset, animationYOffset);
-                this.pictureBoxManager.UpdateBitmapForIRenderingModel(renderingModel);
+                this.UpdateBitmapForRenderingModelForNonnullDelegate(renderingModel);
             }
         }
 
@@ -227,7 +225,8 @@ namespace ElementalPastGame.GameObject
             double gameObjectTileY = (double)(this.CenterY + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.Y - gameObjectModel.YAnimationOffset - animationYOffset) * CommonConstants.TILE_DIMENSION;
 
             List<Bitmap> bitmaps = new();
-            if (gameObjectModel.Image != null) {
+            if (gameObjectModel.Image != null)
+            {
                 Bitmap bitmap = new Bitmap((Bitmap)gameObjectModel.Image, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
                 bitmaps.Add(bitmap);
             }
@@ -242,6 +241,22 @@ namespace ElementalPastGame.GameObject
             };
 
             return renderingModel;
+        }
+
+        internal void RedrawForNonnullDelegate()
+        {
+            if (this.gameStateHandlerDelegate != null)
+            {
+                ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsRedraw(this);
+            }
+        }
+
+        internal void UpdateBitmapForRenderingModelForNonnullDelegate(RenderingModel renderingModel)
+        {
+            if (this.gameStateHandlerDelegate != null)
+            {
+                ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, renderingModel);
+            }
         }
     }
 }

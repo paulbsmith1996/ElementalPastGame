@@ -101,6 +101,17 @@ namespace ElementalPastGame.TileManagement
             this.UpdateRenderingModels(CenterX, CenterY, PreviousCenterX, PreviousCenterY, isAnimating, offset);
         }
 
+        public bool isTileCollidable(int x, int y)
+        {
+            ITile newTile = this.MapManager.TileAt(x, y);
+            if (newTile == null)
+            {
+                return true;
+            }
+
+            return newTile.isCollidable;
+        }
+
         internal void RelabelCenterChunk(int CenterX, int CenterY)
         {
             this.MapManager.MarkTileChunkCentral(CenterX - ActiveTileSetDimension, CenterY - ActiveTileSetDimension, CenterX + ActiveTileSetDimension, CenterY + ActiveTileSetDimension);

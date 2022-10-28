@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using ElementalPastGame.Common;
 using ElementalPastGame.Components;
+using ElementalPastGame.Components.ComponentSequences;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
@@ -20,13 +22,11 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
 
         internal BattleState state;
-        internal GameTextBox textBox;
+        internal InteractableTextComponentTree textComponents;
 
         public BattleGameStateHandler()
         {
             this.state = BattleState.Start;
-            int textBoxHeight = 125;
-            textBox = new GameTextBox("This is a test text box with more text. Battle is starting.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
         }
 
         public void HandleKeyInputs(List<Keys> keyCodes)
@@ -34,7 +34,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             switch (this.state)
             {
                 case BattleState.Start:
-                    this.HandleStartSequence();
+                    this.GetTextComponents().HandleKeyInputs(keyCodes);
                     break;
                 case BattleState.MoveSelection:
                     break;
@@ -45,10 +45,28 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
 
             if (gameStateHandlerDelegate != null) {
-                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, textBox.getRenderingModel());
+                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetTextComponents().GetRenderingModel());
                 gameStateHandlerDelegate.IGameStateHandlerNeedsRedraw(this);
             }
 
+        }
+
+        internal InteractableTextComponentTree GetTextComponents()
+        {
+            if (this.textComponents != null)
+            {
+                return this.textComponents;
+            }
+
+            int textBoxHeight = 125;
+            GameTextBox firstBox = new("You encountered an enemy.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
+            GameTextBox secondBox = new("Prepare for battle.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
+            TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(firstBox);
+            TextComponentTreeTextBoxNode secondBoxNode = new TextComponentTreeTextBoxNode(secondBox);
+
+            firstBoxNode.SetChild(secondBoxNode);
+            this.textComponents = new InteractableTextComponentTree(firstBoxNode);
+            return this.textComponents;
         }
     }
 }

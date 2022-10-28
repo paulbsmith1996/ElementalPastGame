@@ -19,5 +19,7 @@ namespace ElementalPastGame.Components
         public static Font FONT = new Font("Arial Narrow", FONT_SIZE);
         public static Color DEFAULT_BORDER_COLOR = Color.FromArgb(255, 70, 120, 150);
         public static Color DEFAULT_BACKGROUND_COLOR = Color.FromArgb(15, 30, 80, 150);
+
+        public static double TEXT_COMPONENT_WAIT_TIME_MS = 1000;
     }
 }

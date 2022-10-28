@@ -22,6 +22,7 @@ namespace ElementalPastGame.GameStateManagement
         internal IPictureBoxManager pictureBoxManager;
 
         internal IGameStateHandler overworldGameStateHandler = OverworldGameStateHandler.getInstance();
+        internal IGameStateHandler battleGameStateHandler;
 
         internal GameState gameState;
 
@@ -59,6 +60,7 @@ namespace ElementalPastGame.GameStateManagement
                     overworldGameStateHandler.HandleKeyInputs(keyCodes);
                     break;
                 case GameState.Battle:
+                    this.battleGameStateHandler.HandleKeyInputs(keyCodes);
                     break;
             }
         }
@@ -80,10 +82,12 @@ namespace ElementalPastGame.GameStateManagement
             switch (gameState)
             {
                 case GameState.Overworld:
-                    overworldGameStateHandler.gameStateHandlerDelegate = this;
+                    this.overworldGameStateHandler.gameStateHandlerDelegate = this;
                     break;
                 case GameState.Battle:
                     // TODO: add this as delegate after creating the battle state handler
+                    this.battleGameStateHandler = new BattleGameStateHandler();
+                    this.battleGameStateHandler.gameStateHandlerDelegate = this;
                     break;
             }
         }

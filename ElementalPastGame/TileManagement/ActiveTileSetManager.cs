@@ -47,10 +47,11 @@ namespace ElementalPastGame.TileManagement
             this.MapManager = tileMapManager;
 
             // This should load "9 chunks'" worth of tiles: the center chunk plus the 8 surrounding chunks 
-            this.MapManager.LoadTileChunk(CenterX - LoadRadius,
-                                          CenterY - LoadRadius,
-                                          CenterX + LoadRadius,
-                                          CenterY + LoadRadius);
+            //this.MapManager.LoadTileChunk(CenterX - LoadRadius,
+            //                              CenterY - LoadRadius,
+            //                              CenterX + LoadRadius,
+            //                              CenterY + LoadRadius);
+            this.MapManager.LoadTileChunk(0, 0, CommonConstants.MAX_MAP_TILE_DIMENSION - 1, CommonConstants.MAX_MAP_TILE_DIMENSION - 1);
             this.RelabelCenterChunk(CenterX, CenterY);
             this.UpdateRenderingModels(CenterX, CenterY, CenterX, CenterY, false, 0);
         }
@@ -63,41 +64,41 @@ namespace ElementalPastGame.TileManagement
                 return;
             }
 
-            int diffX = CenterX - PreviousCenterX;
-            int diffY = CenterY - PreviousCenterY;
+            //int diffX = CenterX - PreviousCenterX;
+            //int diffY = CenterY - PreviousCenterY;
 
-            TileLoadState CenterTileLoadState = this.TileLoadStateForTileAt(CenterX, CenterY);
-            switch (CenterTileLoadState)
-            {
-                case TileLoadState.Central:
-                    break;
-                case TileLoadState.Loaded:
-                    if (diffX > 0)
-                    {
-                        this.MapManager.UnloadTileChunk(CenterX - LoadRadius - 1, CenterY - LoadRadius, CenterX - ActiveTileSetDimension, CenterY + LoadRadius);
-                        this.MapManager.LoadTileChunk(CenterX + ActiveTileSetDimension, CenterY - LoadRadius, CenterX + LoadRadius, CenterY + LoadRadius);
-                    }
-                    else if (diffX < 0)
-                    {
-                        this.MapManager.UnloadTileChunk(CenterX + ActiveTileSetDimension, CenterY - LoadRadius, CenterX + LoadRadius + 1, CenterY + LoadRadius);
-                        this.MapManager.LoadTileChunk(CenterX - LoadRadius, CenterY - LoadRadius, CenterX - ActiveTileSetDimension, CenterY + LoadRadius);
-                    }
-                    else if (diffY > 0) {
-                        this.MapManager.UnloadTileChunk(CenterX - LoadRadius, CenterY - LoadRadius - 1, CenterX + LoadRadius, CenterY - ActiveTileSetDimension);
-                        this.MapManager.LoadTileChunk(CenterX - LoadRadius, CenterY + ActiveTileSetDimension, CenterX + LoadRadius, CenterY + LoadRadius);
-                    }
-                    else if (diffY < 0)
-                    {
-                        this.MapManager.UnloadTileChunk(CenterX - LoadRadius, CenterY + ActiveTileSetDimension, CenterX + LoadRadius, CenterY + LoadRadius + 1);
-                        this.MapManager.LoadTileChunk(CenterX - LoadRadius, CenterY - LoadRadius, CenterX + LoadRadius, CenterY - ActiveTileSetDimension);
-                    }
+            //TileLoadState CenterTileLoadState = this.TileLoadStateForTileAt(CenterX, CenterY);
+            //switch (CenterTileLoadState)
+            //{
+            //    case TileLoadState.Central:
+            //        break;
+            //    case TileLoadState.Loaded:
+            //        if (diffX > 0)
+            //        {
+            //            this.MapManager.UnloadTileChunk(CenterX - LoadRadius - 1, CenterY - LoadRadius, CenterX - ActiveTileSetDimension, CenterY + LoadRadius);
+            //            this.MapManager.LoadTileChunk(CenterX + ActiveTileSetDimension, CenterY - LoadRadius, CenterX + LoadRadius, CenterY + LoadRadius);
+            //        }
+            //        else if (diffX < 0)
+            //        {
+            //            this.MapManager.UnloadTileChunk(CenterX + ActiveTileSetDimension, CenterY - LoadRadius, CenterX + LoadRadius + 1, CenterY + LoadRadius);
+            //            this.MapManager.LoadTileChunk(CenterX - LoadRadius, CenterY - LoadRadius, CenterX - ActiveTileSetDimension, CenterY + LoadRadius);
+            //        }
+            //        else if (diffY > 0) {
+            //            this.MapManager.UnloadTileChunk(CenterX - LoadRadius, CenterY - LoadRadius - 1, CenterX + LoadRadius, CenterY - ActiveTileSetDimension);
+            //            this.MapManager.LoadTileChunk(CenterX - LoadRadius, CenterY + ActiveTileSetDimension, CenterX + LoadRadius, CenterY + LoadRadius);
+            //        }
+            //        else if (diffY < 0)
+            //        {
+            //            this.MapManager.UnloadTileChunk(CenterX - LoadRadius, CenterY + ActiveTileSetDimension, CenterX + LoadRadius, CenterY + LoadRadius + 1);
+            //            this.MapManager.LoadTileChunk(CenterX - LoadRadius, CenterY - LoadRadius, CenterX + LoadRadius, CenterY - ActiveTileSetDimension);
+            //        }
 
-                    this.RelabelCenterChunk(CenterX, CenterY);
+            //        this.RelabelCenterChunk(CenterX, CenterY);
 
-                    break;
-                case TileLoadState.Unloaded:
-                    break;
-            }
+            //        break;
+            //    case TileLoadState.Unloaded:
+            //        break;
+            //}
             this.UpdateRenderingModels(CenterX, CenterY, PreviousCenterX, PreviousCenterY, isAnimating, offset);
         }
 

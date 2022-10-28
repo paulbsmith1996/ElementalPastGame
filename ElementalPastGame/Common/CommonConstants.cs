@@ -31,5 +31,6 @@ namespace ElementalPastGame.Common
         /// The max width and height that any tile can be placed at in the TileManager.
         /// </summary>
         public static int MAX_MAP_TILE_DIMENSION = 1000;
+        public static int GAME_DIMENSION = TILE_DIMENSION * (2 * TILE_VIEW_DISTANCE + 1);
     }
 }

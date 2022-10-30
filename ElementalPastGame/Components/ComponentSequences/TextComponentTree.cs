@@ -9,8 +9,10 @@ namespace ElementalPastGame.Components.ComponentSequences
     public class TextComponentTree : ITextComponentTree
     {
         Dictionary<String, ITextComponentTree> childrenByKeys = new();
-        public ITextComponent textComponent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-        public ITextComponentTree? parent { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public ITextComponent textComponent { get; set; }
+        public ITextComponentTree? parent { get; set; }
+
+        public bool isReturnable { get; set; }
 
         public TextComponentTree(ITextComponent textComponent)
         {
@@ -37,9 +39,12 @@ namespace ElementalPastGame.Components.ComponentSequences
             this.childrenByKeys[key] = child;
         }
 
-        public String GetSelectedOption()
+        public ITextComponentTree GetSelectedChild()
         {
+            // TODO: mark this as not implemented again
             throw new NotImplementedException();
         }
+
+
     }
 }

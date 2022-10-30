@@ -25,6 +25,8 @@ namespace ElementalPastGame.Components
 
         public ITextComponent? childTextComponent { get; set; }
 
+        internal RenderingModel? renderingModel { get; set; }
+
         public GameTextBox (String text, int x, int y, int width, int height) : this(text, x, y, width, height, TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, TextComponentConstants.DEFAULT_BACKGROUND_COLOR)
         {
         }
@@ -43,6 +45,11 @@ namespace ElementalPastGame.Components
 
         public RenderingModel getRenderingModel()
         {
+            if (this.renderingModel != null)
+            {
+                return (RenderingModel)this.renderingModel;
+            }
+
             Bitmap bitmap = new Bitmap(this.width, this.height);
 
             Graphics g = Graphics.FromImage(bitmap);
@@ -67,7 +74,7 @@ namespace ElementalPastGame.Components
                 bitmap
             };
 
-            RenderingModel textBoxRenderingModel = new ()
+            this.renderingModel = new ()
             {
                 X = this.x,
                 Y = this.y,
@@ -75,7 +82,8 @@ namespace ElementalPastGame.Components
                 Height = this.height,
                 Bitmaps = bitmaps,
             };
-            return textBoxRenderingModel;
+
+            return (RenderingModel)this.renderingModel;
         }
 
         internal static GraphicsPath RoundedRect(Rectangle bounds, int radius)

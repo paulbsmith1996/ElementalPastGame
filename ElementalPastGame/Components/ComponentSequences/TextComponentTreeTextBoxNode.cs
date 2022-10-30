@@ -11,6 +11,7 @@ namespace ElementalPastGame.Components.ComponentSequences
         internal ITextComponentTree? child;
         public ITextComponent textComponent { get; set; }
         public ITextComponentTree? parent { get; set; }
+        public bool isReturnable { get; set; }
 
         public TextComponentTreeTextBoxNode(ITextComponent textComponent)
         {
@@ -51,12 +52,12 @@ namespace ElementalPastGame.Components.ComponentSequences
 
         public ITextComponentTree? GetParentTree()
         {
-            return this.parent;
+            return null;
         }
 
-        public String GetSelectedOption()
+        public ITextComponentTree? GetSelectedChild()
         {
-            return "";
+            return child;
         }
     }
 }

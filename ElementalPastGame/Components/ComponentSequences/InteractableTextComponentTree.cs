@@ -1,4 +1,5 @@
-﻿using ElementalPastGame.Rendering;
+﻿using ElementalPastGame.Common;
+using ElementalPastGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -35,18 +36,61 @@ namespace ElementalPastGame.Components.ComponentSequences
             lastInputTime = handleInputTime;
 
             Keys lastKey = keyCodes.Last();
+
+            if (this.activeTree.textComponent is TextMenu)
+            {
+                TextMenu menu = (TextMenu)this.activeTree.textComponent;
+                Location currentSelectedLocation = menu.GetSelected();
+                switch (lastKey)
+                {
+                    case Keys.Up:
+                        if (currentSelectedLocation.Y != 0)
+                        {
+                            menu.SetSelected(new Location() { X = currentSelectedLocation.X, Y = currentSelectedLocation.Y - 1 });
+                        }
+                        return;
+                    case Keys.Down:
+                        if (currentSelectedLocation.Y < menu.options.Count - 1)
+                        {
+                            menu.SetSelected(new Location() { X = currentSelectedLocation.X, Y = currentSelectedLocation.Y + 1 });
+                        }
+                        return;
+                    case Keys.Left:
+                        if (currentSelectedLocation.X != 0)
+                        {
+                            menu.SetSelected(new Location() { X = currentSelectedLocation.X - 1, Y = currentSelectedLocation.Y});
+                        }
+                        return;
+                    case Keys.Right:
+                        if (currentSelectedLocation.X < menu.optionsWidth - 1)
+                        {
+                            menu.SetSelected(new Location() { X = currentSelectedLocation.X + 1, Y = currentSelectedLocation.Y});
+                        }
+                        return;
+                    default:
+                        break;
+                }
+            }
+
             switch (lastKey)
             {
                 case Keys.Space:
-                case Keys.Enter:
                 case Keys.S:
                     break;
+                case Keys.D:
+                case Keys.Escape:
+                case Keys.Back:
+                    ITextComponentTree? parent = this.activeTree.GetParentTree();
+                    if (parent != null)
+                    {
+                        this.activeTree = (ITextComponentTree)parent;
+                    }
+                    return;
                 default:
                     return;
             }
 
-            String selectedOption = this.activeTree.GetSelectedOption();
-            ITextComponentTree? nextTree = this.activeTree.ChildForKey(selectedOption);
+            ITextComponentTree? nextTree = this.activeTree.GetSelectedChild();
             if (nextTree != null)
             {
                 this.activeTree = (ITextComponentTree)nextTree;

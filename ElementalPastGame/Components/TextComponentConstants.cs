@@ -16,10 +16,17 @@ namespace ElementalPastGame.Components
 
         public static int INNER_RECT_OFFSET = 5;
 
+        public static int MENU_ITEM_VERTICAL_SPACING = 20;
+        public static int MENU_ITEM_HORIZONTAL_SPACING = 20;
+        public static int MENU_SELECT_ICON_WIDTH = 10;
+        public static int MENU_SELECT_ICON_HEIGHT = 10;
+        public static int MENU_SELECT_ICON_TEXT_PADDING = 3;
+        public static Color MENU_SELECT_ICON_COLOR = Color.White;
+
         public static Font FONT = new Font("Arial Narrow", FONT_SIZE);
         public static Color DEFAULT_BORDER_COLOR = Color.FromArgb(255, 70, 120, 150);
-        public static Color DEFAULT_BACKGROUND_COLOR = Color.FromArgb(15, 30, 80, 150);
+        public static Color DEFAULT_BACKGROUND_COLOR = Color.FromArgb(150, 30, 80, 150);
 
-        public static double TEXT_COMPONENT_WAIT_TIME_MS = 1000;
+        public static double TEXT_COMPONENT_WAIT_TIME_MS = 120;
     }
 }

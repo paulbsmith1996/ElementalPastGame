@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElementalPastGame.Items.Consumables;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -13,7 +14,7 @@ namespace ElementalPastGame.Items.Inventory
 
         public void AddItem(Item item, int amount)
         {
-            List<InventoryItemEntry> typedItems = inventory[item.type];
+            List<InventoryItemEntry>? typedItems = inventory.GetValueOrDefault(item.type);
             if (typedItems == null)
             {
                 // This pocket does not exist yet
@@ -80,6 +81,14 @@ namespace ElementalPastGame.Items.Inventory
             }
 
             return null;
+        }
+
+        public static Inventory DebugInventory()
+        {
+            Inventory debugInventory = new();
+            debugInventory.AddItem(new HealthPotion(), 3);
+            debugInventory.AddItem(new MinorHealthPotion(), 2);
+            return debugInventory;
         }
     }
 }

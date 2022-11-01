@@ -1,6 +1,7 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
+using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.TileManagement;
@@ -23,7 +24,9 @@ namespace ElementalPastGame.GameStateManagement
 
         internal IGameStateHandler overworldGameStateHandler = OverworldGameStateHandler.getInstance();
         internal IGameStateHandler battleGameStateHandler;
+        internal IGameStateHandler currentGameStateHandler;
 
+        internal GameState previousGameState;
         internal GameState gameState;
 
         public static IGameObjectManager getInstance()
@@ -39,8 +42,9 @@ namespace ElementalPastGame.GameStateManagement
 
         internal GameObjectManager(IPictureBoxManager pictureBoxManager)
         {
-            overworldGameStateHandler.gameStateHandlerDelegate = this;
-            gameState = GameState.Overworld;
+            this.currentGameStateHandler = this.overworldGameStateHandler;
+            this.currentGameStateHandler.gameStateHandlerDelegate = this;
+            this.previousGameState = this.gameState = GameState.Overworld;
 
             this.pictureBoxManager = pictureBoxManager;
 
@@ -54,15 +58,7 @@ namespace ElementalPastGame.GameStateManagement
         // IKeyEventSubscriber
         public void HandlePressedKeys(List<Keys> keyCodes)
         {
-            switch (gameState)
-            {
-                case GameState.Overworld:
-                    overworldGameStateHandler.HandleKeyInputs(keyCodes);
-                    break;
-                case GameState.Battle:
-                    this.battleGameStateHandler.HandleKeyInputs(keyCodes);
-                    break;
-            }
+            this.currentGameStateHandler.HandleKeyInputs(keyCodes);
         }
 
         public void IGameStateHandlerNeedsRedraw(IGameStateHandler gameStateHandler)
@@ -78,18 +74,26 @@ namespace ElementalPastGame.GameStateManagement
         public void IGameStateHandlerNeedsGameStateUpdate(IGameStateHandler gameStateHandler, GameState gameState)
         {
             gameStateHandler.gameStateHandlerDelegate = null;
+            this.previousGameState = this.gameState;
             this.gameState = gameState;
+
+            this.currentGameStateHandler.TransitionToGameState(this.gameState);
+
             switch (gameState)
             {
                 case GameState.Overworld:
-                    this.overworldGameStateHandler.gameStateHandlerDelegate = this;
+                    this.currentGameStateHandler = this.overworldGameStateHandler;
                     break;
                 case GameState.Battle:
                     // TODO: add this as delegate after creating the battle state handler
-                    this.battleGameStateHandler = new BattleGameStateHandler();
-                    this.battleGameStateHandler.gameStateHandlerDelegate = this;
+                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), new(), new());
                     break;
             }
+
+            this.currentGameStateHandler.gameStateHandlerDelegate = this;
+
+            this.currentGameStateHandler.TransitionFromGameState(this.gameState);
+
         }
     }
 }

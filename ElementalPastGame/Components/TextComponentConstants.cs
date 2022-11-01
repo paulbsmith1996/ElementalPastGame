@@ -17,7 +17,7 @@ namespace ElementalPastGame.Components
         public static int INNER_RECT_OFFSET = 5;
 
         public static int MENU_ITEM_VERTICAL_SPACING = 20;
-        public static int MENU_ITEM_HORIZONTAL_SPACING = 20;
+        public static int MENU_ITEM_HORIZONTAL_SPACING = 26;
         public static int MENU_SELECT_ICON_WIDTH = 10;
         public static int MENU_SELECT_ICON_HEIGHT = 10;
         public static int MENU_SELECT_ICON_TEXT_PADDING = 3;

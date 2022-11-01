@@ -13,6 +13,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
         public void HandleKeyInputs(List<Keys> keyCodes);
 
+        public void TransitionFromGameState(GameState state);
+        public void TransitionToGameState(GameState state);
+
     }
 
     public interface IGameStateHandlerDelegate

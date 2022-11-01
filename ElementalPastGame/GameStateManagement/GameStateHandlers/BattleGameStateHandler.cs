@@ -8,12 +8,15 @@ using System.Threading.Tasks;
 using ElementalPastGame.Common;
 using ElementalPastGame.Components;
 using ElementalPastGame.Components.ComponentSequences;
+using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.Rendering;
 using static System.Windows.Forms.Design.AxImporter;
+using static ElementalPastGame.GameStateManagement.IGameObjectManager;
+using static ElementalPastGame.Items.Item;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
-    public class BattleGameStateHandler : IGameStateHandler
+    public class BattleGameStateHandler : IGameStateHandler, ITextMenuObserver
     {
         internal enum BattleState
         {
@@ -22,14 +25,25 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             MoveResolution,
             End,
         }
+
+        public static String ESCAPE_STRING = "ESCAPE";
+        public static String CONSUME_STRING = "CONSUME";
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
 
         internal BattleState state;
         internal InteractableTextComponentTree? textComponents;
+        internal Inventory inventory;
 
-        public BattleGameStateHandler()
+        internal List<IGameObjectModel> enemies;
+        internal List<IGameObjectModel> allies;
+
+        public BattleGameStateHandler(Inventory inventory, List<IGameObjectModel> allies, List<IGameObjectModel> enemies)
         {
             this.state = BattleState.Start;
+            this.inventory = inventory;
+
+            this.enemies = enemies;
+            this.allies = allies;
         }
 
         public void HandleKeyInputs(List<Keys> keyCodes)
@@ -47,7 +61,22 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     break;
             }
             this.Redraw();
+        }
 
+        public void MenuDidResolve(TextMenu menu, string key)
+        {
+            if (key.Contains(ESCAPE_STRING))
+            {
+                this.Escape();
+            }
+        }
+
+        internal void Escape()
+        {
+            if (this.gameStateHandlerDelegate != null)
+            {
+                ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld);
+            }
         }
 
         internal InteractableTextComponentTree GetTextComponents()
@@ -58,25 +87,27 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
 
             int textBoxHeight = 125;
-            GameTextBox firstBox = new("You encountered an enemy.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
-            GameTextBox secondBox = new("Prepare for battle.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
+            GameTextBox firstBox = new("An enemy unit has spotted you.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
+            GameTextBox secondBox = new("Gather up and prepare to defend yourselves.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
             TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(firstBox);
             TextComponentTreeTextBoxNode secondBoxNode = new TextComponentTreeTextBoxNode(secondBox);
 
-            List<String> subOptions1 = new() { "Suboption0_0", "Suboption0_1", "Suboption0_2", "Suboption0_3" };
-            List<String> subOptions2 = new() { "Suboption1_0", "Suboption1_1", "Suboption1_2", "Suboption2_3" };
-            List<String> subOptions3 = new() { "Suboption2_0", "Suboption2_1", "Suboption2_2", "Suboption2_3" };
+            TextMenu mainBattleMenu = new(false, 500, 700);
+            mainBattleMenu.AddMenuObserver(this);
 
-            TextMenu subMenu1 = new(subOptions1, true, 40, 0);
-            TextMenu subMenu2 = new(subOptions2, true, 40, 0);
-            TextMenu subMenu3 = new(subOptions3, true, 40, 0);
-            TextMenu menu = new(false, 0, 0);
-            menu.AddOptionWithKey(subMenu1, "Option1");
-            menu.AddOptionWithKey(subMenu2, "Option2");
-            menu.AddOptionWithKey(subMenu3, "Option3");
+            List<String> inventoryContents = new();
+            foreach (InventoryItemEntry entry in this.inventory.GetItemEntriesForType(ItemType.Consumable))
+            {
+                String itemOptionString = entry.item.displayName + "  (" + entry.count + ")";
+                inventoryContents.Add(itemOptionString);
+            }
+            TextMenu inventorySubmenu = new TextMenu(inventoryContents, true, 500, 700);
+
+            mainBattleMenu.AddSubOptionWithKey(inventorySubmenu, CONSUME_STRING);
+            mainBattleMenu.AddTerminalOption(ESCAPE_STRING);
 
             firstBoxNode.SetChild(secondBoxNode);
-            secondBoxNode.SetChild(menu);
+            secondBoxNode.SetChild(mainBattleMenu);
             this.textComponents = new InteractableTextComponentTree(firstBoxNode);
             return this.textComponents;
         }
@@ -120,6 +151,16 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             {
                 this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetTextComponents().GetRenderingModel());
             }
+        }
+
+        public void TransitionFromGameState(GameState state)
+        {
+            // TODO: let's figure out if we need to do anything here
+        }
+
+        public void TransitionToGameState(GameState state)
+        {
+            // TODO: let's figure out if we need to do anything here
         }
     }
 }

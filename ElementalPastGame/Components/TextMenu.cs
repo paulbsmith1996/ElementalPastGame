@@ -34,6 +34,7 @@ namespace ElementalPastGame.Components
         public int optionsWidth { get; set; }
         internal RenderingModel? renderingModel;
         internal Dictionary<String, ITextComponentTree> textComponentTreesByKey = new();
+        internal List<ITextMenuObserver> observers = new();
         internal bool needsRenderingModelUpdate;
 
         public ITextComponent textComponent { 
@@ -100,10 +101,24 @@ namespace ElementalPastGame.Components
             return this.textComponentTreesByKey.GetValueOrDefault(key);
         }
 
-        public void AddOptionWithKey(ITextComponentTree subTree, String key)
+        public void AddSubOptionWithKey(ITextComponentTree subTree, String key)
         {
+            if (this.options.Count == 0)
+            {
+                this.selectedOption = key;
+            }
             this.options.Add(key);
             this.SetChildForKey(key, subTree);
+            this.needsRenderingModelUpdate = true;
+        }
+
+        public void AddTerminalOption(String key)
+        {
+            if (this.options.Count == 0)
+            {
+                this.selectedOption = key;
+            }
+            this.options.Add(key);
         }
 
         public void SetChildForKey(string key, ITextComponentTree child)
@@ -131,6 +146,31 @@ namespace ElementalPastGame.Components
         {
             String selectedOption = this.selectedOption;
             return this.ChildForKey(selectedOption);
+        }
+        public void AddMenuObserver(ITextMenuObserver menuObserver)
+        {
+            this.observers.Add(menuObserver);
+        }
+
+        public void RemoveMenuObserver(ITextMenuObserver menuObserver)
+        {
+            this.observers.Remove(menuObserver);
+        }
+
+        public void Resolve()
+        {
+            ITextComponentTree? currentTextComponentTree = this;
+            while (currentTextComponentTree != null)
+            {
+                if (currentTextComponentTree is TextMenu) {
+                    TextMenu currentMenu = (TextMenu)currentTextComponentTree;
+                    foreach (ITextMenuObserver observer in currentMenu.observers)
+                    {
+                        observer.MenuDidResolve(currentMenu, this.GetAncestorPath() + this.selectedOption);
+                    }
+                }
+                currentTextComponentTree = currentTextComponentTree.GetParentTree();
+            }
         }
 
         public RenderingModel getRenderingModel()
@@ -212,8 +252,21 @@ namespace ElementalPastGame.Components
             return (RenderingModel)this.renderingModel;
         }
 
+        internal String GetAncestorPath()
+        {
+            ITextComponentTree? parent = this.GetParentTree();
+            if (!(parent is TextMenu))
+            {
+                return "";
+            }
+
+            TextMenu parentMenu = (TextMenu)parent;
+            return parentMenu.GetAncestorPath() + ">" + parentMenu.selectedOption;
+        }
+
         internal float ComputeLongestRowWidth(Graphics graphics)
         {
+
             float maxWidth = 0;
             float currentRowWidth = 0;
             // Since the horizontal spacing should be the same for every row (same number of options
@@ -221,14 +274,14 @@ namespace ElementalPastGame.Components
             // of the maximum row width.
             for (int optionsIndex = 0; optionsIndex < options.Count; optionsIndex++)
             {
-                if (optionsIndex % optionsWidth == 0 || optionsIndex == options.Count - 1) {
+                currentRowWidth += graphics.MeasureString(options[optionsIndex], TextComponentConstants.FONT).Width;
+                if (optionsIndex % optionsWidth == optionsWidth - 1 || optionsIndex == options.Count - 1) {
                     if (currentRowWidth > maxWidth)
                     {
                         maxWidth = currentRowWidth;
                     }
                     currentRowWidth = 0;
                 }
-                currentRowWidth += graphics.MeasureString(options[optionsIndex], TextComponentConstants.FONT).Width;
             }
 
             return maxWidth + (TextComponentConstants.MENU_ITEM_HORIZONTAL_SPACING * (this.optionsWidth + 1));

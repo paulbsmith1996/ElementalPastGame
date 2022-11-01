@@ -13,6 +13,7 @@ namespace ElementalPastGame.Components.ComponentSequences
     {
         internal ITextComponentTree activeTree;
         internal DateTime lastInputTime;
+        
         public InteractableTextComponentTree(ITextComponentTree tree)
         {
             this.lastInputTime = DateTime.Now;
@@ -90,10 +91,18 @@ namespace ElementalPastGame.Components.ComponentSequences
                     return;
             }
 
+            // If there is a child tree, display it
             ITextComponentTree? nextTree = this.activeTree.GetSelectedChild();
             if (nextTree != null)
             {
                 this.activeTree = (ITextComponentTree)nextTree;
+                return;
+            }
+
+            // There are no more child trees, let's dismiss this whole thing
+            if (this.activeTree is TextMenu)
+            {
+                ((TextMenu)this.activeTree).Resolve();
             }
         }
 

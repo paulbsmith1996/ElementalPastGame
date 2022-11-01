@@ -122,9 +122,35 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 {
                     if (this.gameStateHandlerDelegate != null)
                     {
+                        this.MoveObjectAwayFromCenter(gameObjectModel);
                         ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Battle);
                     }
                     return;
+                }
+            }
+        }
+
+        internal void MoveObjectAwayFromCenter(IGameObjectModel gameObjectModel)
+        {
+            for (int xPositionModifier = -2; xPositionModifier <= 2; xPositionModifier++)
+            {
+                for (int yPositionModifier = -2; yPositionModifier <= 2; yPositionModifier++)
+                {
+                    if (xPositionModifier == 1 && yPositionModifier == 1)
+                    {
+                        continue;
+                    }
+                    Location newLocation = new()
+                    {
+                        X = gameObjectModel.Location.X + xPositionModifier,
+                        Y = gameObjectModel.Location.Y + yPositionModifier
+                    };
+
+                    if (this.ValidateNewGameObjectPosition(gameObjectModel, newLocation))
+                    {
+                        gameObjectModel.MoveTo(newLocation.X, newLocation.Y, false);
+                        return;
+                    }
                 }
             }
         }
@@ -257,6 +283,21 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             {
                 ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, renderingModel);
             }
+        }
+
+        public void TransitionFromGameState(GameState state)
+        {
+            switch(state)
+            {
+                case GameState.Battle:
+
+                    break;
+            }
+        }
+
+        public void TransitionToGameState(GameState state)
+        {
+            // So far we just no-op here
         }
     }
 }

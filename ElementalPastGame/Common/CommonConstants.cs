@@ -32,5 +32,7 @@ namespace ElementalPastGame.Common
         /// </summary>
         public static int MAX_MAP_TILE_DIMENSION = 1000;
         public static int GAME_DIMENSION = TILE_DIMENSION * (2 * TILE_VIEW_DISTANCE + 1);
+
+        public static int BATTLE_PARTICIPANT_DIMENSION = 60;
     }
 }

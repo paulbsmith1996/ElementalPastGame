@@ -1,4 +1,5 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.Enemies;
 using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.Items.Inventory;
@@ -86,7 +87,8 @@ namespace ElementalPastGame.GameStateManagement
                     break;
                 case GameState.Battle:
                     // TODO: add this as delegate after creating the battle state handler
-                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), new(), new());
+                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), new() { new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0) }, 
+                                                                                                          new() { new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0) });
                     break;
             }
 

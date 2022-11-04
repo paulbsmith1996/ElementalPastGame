@@ -42,6 +42,10 @@ namespace ElementalPastGame.GameObject
             this.Location = new Location() { X = X, Y = Y };
             this.ImageID = ImageID;
             this.EntityID = GameObjectModel.CurrentEntityID;
+
+            // TODO: we don't necessarily need to load everything now
+            this.LoadIfNeeded();
+
             GameObjectModel.CurrentEntityID++;
         }
 

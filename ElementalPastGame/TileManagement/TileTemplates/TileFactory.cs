@@ -9,7 +9,6 @@ namespace ElementalPastGame.TileManagement.TileTemplates
 {
     public static class TileFactory
     {
-
         public static Tile FenceWithBackground(String BackgroundName)
         {
             List<String> imageNames = new List<string>();

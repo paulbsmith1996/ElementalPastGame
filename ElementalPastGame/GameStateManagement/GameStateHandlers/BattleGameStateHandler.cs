@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.Design;
 using System.Configuration.Internal;
+using System.Drawing;
 using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text;
@@ -30,6 +31,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public static String ESCAPE_STRING = "ESCAPE";
         public static String CONSUME_STRING = "CONSUME";
+        public static String ATTACK_STRING = "ATTACK";
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
 
         internal BattleState state;
@@ -40,11 +42,13 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal List<IGameObjectModel> allies;
 
         internal Bitmap background;
-        internal static int BACKGROUND_WIDTH = 9 * CommonConstants.GAME_DIMENSION / 10;
+        internal static int GAME_OBJECT_HORIZONTAL_PADDING = 150;
+        internal static int BACKGROUND_WIDTH = CommonConstants.GAME_DIMENSION + 120;
         internal static int BACKGROUND_HEIGHT = 4 * CommonConstants.GAME_DIMENSION / 10;
         internal static int BACKGROUND_X = (CommonConstants.GAME_DIMENSION - BACKGROUND_WIDTH) / 2;
-        internal static int BACKGROUND_Y = (CommonConstants.GAME_DIMENSION - BACKGROUND_HEIGHT) / 2;
-        internal static Point PERSPECTIVE = new Point(BACKGROUND_WIDTH / 2, 2000);
+        internal static int BACKGROUND_Y = (CommonConstants.GAME_DIMENSION - BACKGROUND_HEIGHT) - 200;
+        internal static int DEPTH = 500;
+        internal static Point PERSPECTIVE = new Point(BACKGROUND_WIDTH / 2, DEPTH);
 
         public BattleGameStateHandler(Inventory inventory, List<IGameObjectModel> allies, List<IGameObjectModel> enemies)
         {
@@ -77,6 +81,10 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             if (key.Contains(ESCAPE_STRING))
             {
                 this.Escape();
+            }
+            else if (key.Contains(ATTACK_STRING))
+            {
+
             }
         }
 
@@ -112,6 +120,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
             TextMenu inventorySubmenu = new TextMenu(inventoryContents, true, 500, 700);
 
+            mainBattleMenu.AddTerminalOption(ATTACK_STRING);
             mainBattleMenu.AddSubOptionWithKey(inventorySubmenu, CONSUME_STRING);
             mainBattleMenu.AddTerminalOption(ESCAPE_STRING);
 
@@ -136,11 +145,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         {
             Bitmap emptyBitmap = new Bitmap(CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
             Graphics graphics = Graphics.FromImage(emptyBitmap);
-            graphics.FillRectangle(Brushes.Black, 0, 0, CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
-
-            //Point perspective = new Point(CommonConstants.GAME_DIMENSION / 2, 700);
-            ////Bitmap shearedEmptyBitmap = this.GetBackground(emptyBitmap, perspective);
-            //Bitmap shearedBackground = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION / 2, perspective);
+            graphics.FillRectangle(Brushes.LightBlue, 0, 0, CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
 
             RenderingModel backgroundRenderingModel = new()
             {
@@ -172,64 +177,122 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal void UpdateForeground()
         {
-            this.UpdateAllies();
+            this.UpdateGameObjects();
             this.UpdateTextComponents();
         }
 
-        internal void UpdateAllies()
+        internal void UpdateGameObjects()
         {
-            for (float allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
+            for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
             {
-                IGameObjectModel ally = this.allies.ElementAt((int)allyIndex);
+                IGameObjectModel ally = this.allies.ElementAt(allyIndex);
                 if (ally == null)
                 {
                     continue;
                 }
 
-                int allyXPadding = 50;
-                float allyY = ((allyIndex + 1) * BACKGROUND_HEIGHT) / (this.allies.Count) + BACKGROUND_Y;
-
-                float px = PERSPECTIVE.X;
-                float py = PERSPECTIVE.Y;
-                float height = BACKGROUND_HEIGHT + py;
-                float width = BACKGROUND_WIDTH;
-
-                float leftSqueezeEndpoint = (allyY + py - height) * px / height;
-                float rightSqueezeEndpoint = ((py - allyY) * (width - px) / height) + px;
-
-                float squeezeFactor = (rightSqueezeEndpoint - leftSqueezeEndpoint) / width;
-
-                float newX;
-                if (allyXPadding <= px)
-                {
-                    newX = px - ((px - allyXPadding) * squeezeFactor);
-                }
-                else
-                {
-                    newX = px + ((allyXPadding - px) * squeezeFactor);
-                }
-
-                double perspectiveFactor = Math.Pow(squeezeFactor, 1.3);
-                int allyWidth = 2 * (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-                int allyHeight = 2 * (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-
-                Bitmap allyBitmap = new Bitmap(ally.Image, allyWidth, allyHeight);
-                List<Bitmap> bitmaps = new() { allyBitmap };
-
-                RenderingModel allyModel = new()
-                {
-                    X = allyIndex % 2 == 0 ? (int)newX : (int)newX + (allyXPadding / 2),
-                    Y = (2 * BACKGROUND_Y + BACKGROUND_HEIGHT) - (int)allyY,
-                    Width = allyWidth,
-                    Height = allyHeight,
-                    Bitmaps = bitmaps
-                };
-
-                if (this.gameStateHandlerDelegate != null)
-                {
-                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyModel);
-                }
+                this.UpdateGameObject(ally, allyIndex, false);
             }
+
+            for (int enemyIndex = 0; enemyIndex < this.enemies.Count; enemyIndex++)
+            {
+                IGameObjectModel enemy = this.enemies.ElementAt((int)enemyIndex);
+                if (enemy == null)
+                {
+                    continue;
+                }
+
+                this.UpdateGameObject(enemy, enemyIndex, true);
+            }
+        }
+
+        internal void UpdateGameObject(IGameObjectModel gameObjectModel, int lineUpIndex, bool isEnemy)
+        {
+            int lineUpCount = isEnemy ? this.enemies.Count : this.allies.Count;
+            float gameObjectY = (((float)lineUpIndex + 1) * BACKGROUND_HEIGHT) / (lineUpCount + 1) + BACKGROUND_Y;
+
+            double perspectiveFactor = Math.Pow(this.ComputeSqueezeFactor(gameObjectY), 1.1);
+            int entityWidth = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            int entityHeight = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+
+            int gameObjectX = this.ComputeBackgroundXForPoint(new() { X = GAME_OBJECT_HORIZONTAL_PADDING, Y = gameObjectY }, isEnemy);
+
+            Bitmap allyBitmap = new Bitmap(gameObjectModel.Image, entityWidth, entityHeight);
+            List<Bitmap> bitmaps = new() { allyBitmap };
+
+            int xOnBackground;// = gameObjectX < CommonConstants.GAME_DIMENSION / 2 ? gameObjectX + (GAME_OBJECT_HORIZONTAL_PADDING / 2) : gameObjectX - (GAME_OBJECT_HORIZONTAL_PADDING / 2) - entityWidth;
+                              //xOnBackground = lineUpIndex % 2 == 0 ? gameObjectX
+                              //lineUpIndex % 2 == 0 ? gameObjectX : gameObjectX < CommonConstants.GAME_DIMENSION / 2 ? gameObjectX + (GAME_OBJECT_HORIZONTAL_PADDING / 2) : gameObjectX - (GAME_OBJECT_HORIZONTAL_PADDING / 2)
+            bool isEvenRank = lineUpIndex % 2 == 0;
+            bool isOnLeftSide = gameObjectX < PERSPECTIVE.X;
+
+            if (isEvenRank && isOnLeftSide)
+            {
+                xOnBackground = gameObjectX;
+            }
+            else if (isEvenRank && !isOnLeftSide)
+            {
+                xOnBackground = gameObjectX - entityWidth;
+            }
+            else if (!isEvenRank && isOnLeftSide)
+            {
+                xOnBackground = gameObjectX + (GAME_OBJECT_HORIZONTAL_PADDING / 2);
+            }
+            else
+            {
+                xOnBackground = gameObjectX - entityWidth - (GAME_OBJECT_HORIZONTAL_PADDING / 2);
+            }
+
+            RenderingModel allyModel = new()
+            {
+                X = xOnBackground,//lineUpIndex % 2 == 0 ? gameObjectX : gameObjectX < CommonConstants.GAME_DIMENSION / 2 ? gameObjectX + (GAME_OBJECT_HORIZONTAL_PADDING / 2) : gameObjectX - (GAME_OBJECT_HORIZONTAL_PADDING / 2),
+                Y = (int)gameObjectY - entityHeight,//(2 * BACKGROUND_Y + BACKGROUND_HEIGHT) - (int)gameObjectY,
+                Width = entityWidth,
+                Height = entityHeight,
+                Bitmaps = bitmaps
+            };
+
+            if (this.gameStateHandlerDelegate != null)
+            {
+                this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyModel);
+            }
+        }
+
+        internal int ComputeBackgroundXForPoint(PointF point, bool isEnemy)
+        {
+            float squeezeFactor = this.ComputeSqueezeFactor(point.Y);
+
+            float newX;
+            int midX = PERSPECTIVE.X;
+            if (point.X <= midX)
+            {
+                newX = midX - ((midX - point.X) * squeezeFactor);
+            }
+            else
+            {
+                newX = midX + ((point.X - midX) * squeezeFactor);
+            }
+            
+
+            return isEnemy ? CommonConstants.GAME_DIMENSION - (int)newX : (int)newX;
+        }
+
+        internal float ComputeSqueezeFactor(float y)
+        {
+            //float px = PERSPECTIVE.X;
+            //float py = PERSPECTIVE.Y;
+            //float height = BACKGROUND_HEIGHT + py;
+            //float width = BACKGROUND_WIDTH;
+
+            //float leftSqueezeEndpoint = (y + py - height) * px / height;
+            //float rightSqueezeEndpoint = ((py - y) * (width - px) / height) + px;
+
+            // return (rightSqueezeEndpoint - leftSqueezeEndpoint) / width;
+            //return y / (CommonConstants.GAME_DIMENSION + PERSPECTIVE.Y - BACKGROUND_Y);
+            //return (y - BACKGROUND_Y + PERSPECTIVE.Y) / (BACKGROUND_HEIGHT + PERSPECTIVE.Y);
+            float normalizedY = (y - BACKGROUND_Y + PERSPECTIVE.Y);
+            float normalizedHeight = (BACKGROUND_HEIGHT + PERSPECTIVE.Y);
+            return normalizedY / normalizedHeight;
         }
 
         internal void UpdateTextComponents()

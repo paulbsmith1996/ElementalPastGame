@@ -41,7 +41,7 @@ namespace ElementalPastGame.GameObject.Utility
                     if (gameObjectModel != null)
                     {
                         // TODO: needed for loading
-                        //gameObjectModel.LoadIfNeeded();
+                        gameObjectModel.LoadIfNeeded();
                         activeEntities.Add(gameObjectModel);
                         this.previousActiveEntityModels.Remove(gameObjectModel);
                     }

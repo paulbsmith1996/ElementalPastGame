@@ -50,7 +50,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal Bitmap background;
 
-        internal DateTime lastInputTime;
+        internal DateTime lastEnemySelectionInputTime;
+        internal double timeSinceLastEnemySelectionMove;
 
         public BattleGameStateHandler(Inventory inventory, List<EntityDataModel> allies, List<EntityDataModel> enemies)
         {
@@ -68,7 +69,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
             this.enemySelectorColor = Color.White;
 
-            this.lastInputTime = DateTime.Now;
+            this.lastEnemySelectionInputTime = DateTime.Now;
+            this.timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
         }
 
         public void HandleKeyPressed(char keyChar)
@@ -101,12 +103,6 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public void HandleKeysDown(List<Keys> keyCodes)
         {
-            DateTime handleKeysDownTime = DateTime.Now;
-            double timeSinceLastInput = (handleKeysDownTime - this.lastInputTime).TotalMilliseconds;
-            if (keyCodes.Count > 0) {
-                this.lastInputTime = handleKeysDownTime;
-            }
-
             switch (this.state)
             {
                 case BattleState.Start:
@@ -114,7 +110,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     this.GetTextComponents().HandleKeyInputs(keyCodes);
                     break;
                 case BattleState.EnemySelection:
-                    this.UpdateEnemySelection(keyCodes, timeSinceLastInput);
+                    this.UpdateEnemySelection(keyCodes);
                     break;
                 case BattleState.MoveResolution:
                     break;
@@ -125,9 +121,12 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             this.Redraw();
         }
 
-        internal void UpdateEnemySelection(List<Keys> keyCodes, double timeSinceLastInput)
+        internal void UpdateEnemySelection(List<Keys> keyCodes)
         {
-            if (timeSinceLastInput < CommonConstants.KEY_DEBOUNCE_TIME_MS)
+            DateTime handleKeysDownTime = DateTime.Now;
+            this.timeSinceLastEnemySelectionMove = (handleKeysDownTime - this.lastEnemySelectionInputTime).TotalMilliseconds;
+
+            if (this.timeSinceLastEnemySelectionMove < CommonConstants.KEY_DEBOUNCE_TIME_MS)
             {
                 return;
             }
@@ -154,6 +153,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     }
                     break;
             }
+
+            this.lastEnemySelectionInputTime = handleKeysDownTime;
         }
 
         public void MenuDidResolve(TextMenu menu, string key)

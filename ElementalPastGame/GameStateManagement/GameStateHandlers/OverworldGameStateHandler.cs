@@ -64,8 +64,14 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             return !this.activeTileSetManager.isTileCollidable(newLocation.X, newLocation.Y);
         }
 
-        public void HandleKeyInputs(List<Keys> keyCodes)
+        public void HandleKeyPressed(char keyChar)
         {
+            // No-op. No need for special behavior here
+        }
+
+        public void HandleKeysDown(List<Keys> keyCodes)
+        {
+            DateTime startHandleKeysDown = DateTime.Now;
             this.UpdateGameState();
             double offset = 0;
             if (isAnimating)
@@ -95,6 +101,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 Keys lastKey = keyCodes.Last();
                 if (this.ValidateProposedNewLocationForKey(lastKey))
                 {
+                    // TODO: Figure out the last directional key pressed. As it stands, if you press another
+                    // key, then you can't move.
                     this.HandleOverworldInputKey(keyCodes.Last());
                     this.UpdateBackgroundWithOffset(1.0);
                     this.UpdateForegroundWithOffset(this.CenterX - this.PreviousCenterX, this.CenterY - this.PreviousCenterY);
@@ -112,6 +120,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
 
             this.RedrawForNonnullDelegate();
+            DateTime endHandleKeysDown = DateTime.Now;
+            double timeToHandleKeysDown = (endHandleKeysDown - startHandleKeysDown).TotalMilliseconds;
+            Console.WriteLine(timeToHandleKeysDown);
         }
 
         internal void UpdateGameState ()
@@ -251,9 +262,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             double gameObjectTileY = (double)(this.CenterY + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.Y - gameObjectModel.YAnimationOffset - animationYOffset) * CommonConstants.TILE_DIMENSION;
 
             List<Bitmap> bitmaps = new();
-            if (gameObjectModel.Image != null)
+            if (gameObjectModel.dataModel.Image != null)
             {
-                Bitmap bitmap = new Bitmap((Bitmap)gameObjectModel.Image, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
+                Bitmap bitmap = new Bitmap((Bitmap)gameObjectModel.dataModel.Image, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
                 bitmaps.Add(bitmap);
             }
 

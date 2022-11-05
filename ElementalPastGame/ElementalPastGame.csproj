@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Folder Include="GameObject\Allies\" />
     <Folder Include="Player\" />
   </ItemGroup>
 

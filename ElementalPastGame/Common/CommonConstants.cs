@@ -34,5 +34,12 @@ namespace ElementalPastGame.Common
         public static int GAME_DIMENSION = TILE_DIMENSION * (2 * TILE_VIEW_DISTANCE + 1);
 
         public static int BATTLE_PARTICIPANT_DIMENSION = 100;
+
+        public static double KEY_DEBOUNCE_TIME_MS = 120;
+
+        //public static char SELECT_KEY_BINDING_CHAR = 's';
+        //public static Keys SELECT_KEY_BINDING = Keys.S;
+        //public static char BACK_KEY_BINDING_CHAR = 'd';
+        //public static Keys BACK_KEY_BINDING = Keys.D;
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElementalPastGame.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -27,6 +28,6 @@ namespace ElementalPastGame.Components
         public static Color DEFAULT_BORDER_COLOR = Color.FromArgb(255, 70, 120, 150);
         public static Color DEFAULT_BACKGROUND_COLOR = Color.FromArgb(150, 30, 80, 150);
 
-        public static double TEXT_COMPONENT_WAIT_TIME_MS = 120;
+        public static double TEXT_COMPONENT_WAIT_TIME_MS = CommonConstants.KEY_DEBOUNCE_TIME_MS;
     }
 }

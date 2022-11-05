@@ -9,7 +9,8 @@ namespace ElementalPastGame.KeyInput
     public interface IKeyEventPublisher
     {
         public static IKeyEventPublisher getInstance() => throw new NotImplementedException();
-        public void PublishPressedKeys(List<Keys> keyCodes);
+        public void PublishKeysDown(List<Keys> keyCodes);
+        public void PublishKeyPressed(char keyChar);
         public void AddIKeyEventSubscriber(IKeyEventSubscriber subscriber);
         public void RemoveIKeyEventSubscriber(IKeyEventSubscriber subscriber);
         public void MakeExclusiveIKeySubscriber(IKeyEventSubscriber subscriber);
@@ -18,7 +19,9 @@ namespace ElementalPastGame.KeyInput
 
     public interface IKeyEventSubscriber
     {
-        public void HandlePressedKeys(List<Keys> keyCodes);
+        public void HandleKeysDown(List<Keys> keyCodes);
+
+        public void HandleKeyPressed(char keyChar);
 
     }
 }

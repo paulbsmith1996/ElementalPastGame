@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElementalPastGame.Items.Inventory;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -8,7 +9,8 @@ namespace ElementalPastGame.GameObject
 {
     public interface IPlayerModel : IGameObjectModel
     {
-        public void HandlePressedKeys(List<Keys> keyCodes);
+        public static IPlayerModel GetInstance() { throw new NotImplementedException(); }
+        public Inventory inventory { get; }
 
     }
 }

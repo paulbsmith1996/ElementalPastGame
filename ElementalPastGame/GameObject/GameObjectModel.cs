@@ -1,4 +1,5 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.Entities;
 using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.Rendering;
@@ -16,13 +17,10 @@ namespace ElementalPastGame.GameObject
     {
         public Location Location { get; set; }
         public GameObjectSize Size { get; set; }
-        public String ImageID { get; set; }
 
         internal static long CurrentEntityID = 1;
         public long EntityID { get; set; }
         public Boolean IsCollidable { get; set; }
-        public Image? Image { get; set; }
-
         public double XAnimationOffset { get; set; }
         public double YAnimationOffset { get; set; }
 
@@ -31,16 +29,17 @@ namespace ElementalPastGame.GameObject
         public MovementType movementType { get; set; }
         public List<Direction> Moves { get; set; }
         public bool shouldCycleMoves { get; set; }
+        public EntityDataModel dataModel { get; set; }
+
         internal int currentMoveIndex = 0;
         internal int runloopsSinceLastAggressiveMove = 0;
 
-
-        public GameObjectModel(String ImageID, int X, int Y, MovementType movementType = MovementType.Wander)
+        public GameObjectModel(EntityType type, int level, int X, int Y, MovementType movementType = MovementType.Wander)
         {
             this.movementType = movementType;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
-            this.ImageID = ImageID;
+            this.dataModel = new EntityDataModel(type, level);
             this.EntityID = GameObjectModel.CurrentEntityID;
 
             // TODO: we don't necessarily need to load everything now
@@ -51,17 +50,12 @@ namespace ElementalPastGame.GameObject
 
         public void LoadIfNeeded()
         {
-            if (this.Image != null)
-            {
-                return;
-            }
-
-            this.Image = TextureMapping.Mapping[this.ImageID];
+            this.dataModel.Load();
         }
 
         public void Unload()
         {
-            this.Image = null;
+            this.dataModel.Image = null;
         }
 
         public void MoveTo(int NewX, int NewY, bool isAnimated)

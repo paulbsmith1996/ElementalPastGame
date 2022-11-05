@@ -24,7 +24,6 @@ namespace ElementalPastGame.GameStateManagement
         internal IPictureBoxManager pictureBoxManager;
 
         internal IGameStateHandler overworldGameStateHandler = OverworldGameStateHandler.getInstance();
-        internal IGameStateHandler battleGameStateHandler;
         internal IGameStateHandler currentGameStateHandler;
 
         internal GameState previousGameState;
@@ -56,10 +55,15 @@ namespace ElementalPastGame.GameStateManagement
             this.pictureBoxManager.Redraw();
         }
 
-        // IKeyEventSubscriber
-        public void HandlePressedKeys(List<Keys> keyCodes)
+        public void HandleKeyPressed(char keyChar)
         {
-            this.currentGameStateHandler.HandleKeyInputs(keyCodes);
+            this.currentGameStateHandler.HandleKeyPressed(keyChar);
+        }
+
+        // IKeyEventSubscriber
+        public void HandleKeysDown(List<Keys> keyCodes)
+        {
+            this.currentGameStateHandler.HandleKeysDown(keyCodes);
         }
 
         public void IGameStateHandlerNeedsRedraw(IGameStateHandler gameStateHandler)
@@ -86,9 +90,8 @@ namespace ElementalPastGame.GameStateManagement
                     this.currentGameStateHandler = this.overworldGameStateHandler;
                     break;
                 case GameState.Battle:
-                    // TODO: add this as delegate after creating the battle state handler
-                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), new() { new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0) }, 
-                                                                                                          new() { new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0), new Goblin(0, 0) });
+                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), new() { new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel }, 
+                                                                                                          new() { new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel });
                     break;
             }
 

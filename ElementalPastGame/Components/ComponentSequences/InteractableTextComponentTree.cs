@@ -20,6 +20,42 @@ namespace ElementalPastGame.Components.ComponentSequences
             this.activeTree = tree;
         }
 
+        // Use this method for selection and generally keys that need debouncing
+        public void HandleKeyPressed(char keyChar)
+        {
+            switch (keyChar)
+            {
+                case ' ':
+                case 's':
+                    break;
+                case 'd':
+                    ITextComponentTree? parent = this.activeTree.GetParentTree();
+                    if (parent != null)
+                    {
+                        this.activeTree = (ITextComponentTree)parent;
+                    }
+                    return;
+                default:
+                    return;
+            }
+
+            // If there is a child tree, display it
+            ITextComponentTree? nextTree = this.activeTree.GetSelectedChild();
+            if (nextTree != null)
+            {
+                this.activeTree = (ITextComponentTree)nextTree;
+                return;
+            }
+
+            // There are no more child trees, let's dismiss this whole thing
+            if (this.activeTree is TextMenu)
+            {
+                ((TextMenu)this.activeTree).Resolve();
+            }
+        }
+
+        // Use this for option movement, generally things that can happen smoothly, or continually
+        // on key down
         public void HandleKeyInputs(List<Keys> keyCodes)
         {
             DateTime handleInputTime = DateTime.Now;
@@ -71,38 +107,6 @@ namespace ElementalPastGame.Components.ComponentSequences
                     default:
                         break;
                 }
-            }
-
-            switch (lastKey)
-            {
-                case Keys.Space:
-                case Keys.S:
-                    break;
-                case Keys.D:
-                case Keys.Escape:
-                case Keys.Back:
-                    ITextComponentTree? parent = this.activeTree.GetParentTree();
-                    if (parent != null)
-                    {
-                        this.activeTree = (ITextComponentTree)parent;
-                    }
-                    return;
-                default:
-                    return;
-            }
-
-            // If there is a child tree, display it
-            ITextComponentTree? nextTree = this.activeTree.GetSelectedChild();
-            if (nextTree != null)
-            {
-                this.activeTree = (ITextComponentTree)nextTree;
-                return;
-            }
-
-            // There are no more child trees, let's dismiss this whole thing
-            if (this.activeTree is TextMenu)
-            {
-                ((TextMenu)this.activeTree).Resolve();
             }
         }
 

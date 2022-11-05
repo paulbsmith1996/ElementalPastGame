@@ -9,7 +9,8 @@ namespace ElementalPastGame
     {
         IPictureBoxManager pictureBoxManager = PictureBoxManager.GetInstance();
         IKeyEventPublisher eventPublisher = KeyEventPublisher.GetInstance();
-        List<Keys> pressedKeys = new List<Keys>();
+        List<Keys> downKeys = new List<Keys>();
+        List<char> pressedKeys = new List<char>();
         PictureBox pictureBox;
         internal DateTime DebugLastTickTime = DateTime.Now;
         public GameForm()
@@ -28,36 +29,49 @@ namespace ElementalPastGame
 
         private void KeyIsDown(object sender, KeyEventArgs e)
         {
-            if (!this.pressedKeys.Contains(e.KeyCode)) {
-                this.pressedKeys.Add(e.KeyCode);
+            if (!this.downKeys.Contains(e.KeyCode)) {
+                this.downKeys.Add(e.KeyCode);
             }
         }
 
         private void KeyIsPressed(object sender, KeyPressEventArgs e)
         {
             // No-op for keyIsPressed for the moment
+            //this.eventPublisher.PublishKeyPressed(e.KeyChar);
+            if (!this.pressedKeys.Contains(e.KeyChar))
+            {
+                this.pressedKeys.Add(e.KeyChar);
+            }
         }
 
         private void KeyIsUp(object sender, KeyEventArgs e)
         {
-            this.pressedKeys.Remove(e.KeyCode);
+            this.downKeys.Remove(e.KeyCode);
         }
 
         // Game run loop
 
         private void GameTick(object sender, EventArgs e)
         {
-            this.eventPublisher.PublishPressedKeys(this.pressedKeys);
+            if (this.pressedKeys.Count > 0)
+            {
+                foreach (char keyChar in this.pressedKeys)
+                {
+                    this.eventPublisher.PublishKeyPressed(keyChar);
+                }
+            }
+            this.pressedKeys = new();
+            this.eventPublisher.PublishKeysDown(this.downKeys);
         }
 
         private void GameForm_Leave(object sender, EventArgs e)
         {
-            this.pressedKeys = new List<Keys>();
+            this.downKeys = new List<Keys>();
         }
 
         private void GameForm_Deactivate(object sender, EventArgs e)
         {
-            this.pressedKeys = new List<Keys>();
+            this.downKeys = new List<Keys>();
         }
 
         public void IPictureBoxManagerNeedsRedraw()

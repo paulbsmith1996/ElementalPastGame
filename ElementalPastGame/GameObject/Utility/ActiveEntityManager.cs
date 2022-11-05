@@ -40,7 +40,8 @@ namespace ElementalPastGame.GameObject.Utility
                     IGameObjectModel? gameObjectModel = this.EntitiesByLocation.GetValueOrDefault(location);
                     if (gameObjectModel != null)
                     {
-                        gameObjectModel.LoadIfNeeded();
+                        // TODO: needed for loading
+                        //gameObjectModel.LoadIfNeeded();
                         activeEntities.Add(gameObjectModel);
                         this.previousActiveEntityModels.Remove(gameObjectModel);
                     }
@@ -71,7 +72,7 @@ namespace ElementalPastGame.GameObject.Utility
         }
         internal void LoadEntitiesByLocation()
         {
-            IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X - 10, CommonConstants.GAME_START_LOCATION.Y);
+            IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X - 10, CommonConstants.GAME_START_LOCATION.Y, 5);
             List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
             goblin1.shouldCycleMoves = true;
             goblin1.Moves = goblin1Moves;

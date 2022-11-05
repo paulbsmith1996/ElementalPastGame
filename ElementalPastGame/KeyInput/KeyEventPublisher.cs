@@ -40,11 +40,19 @@ namespace ElementalPastGame.KeyInput
             subscribers.Add(subscriber);
         }
 
-        public void PublishPressedKeys(List<Keys> keyCodes)
+        public void PublishKeysDown(List<Keys> keyCodes)
         {
             foreach (IKeyEventSubscriber subscriber in this.subscribers)
             {
-                subscriber.HandlePressedKeys(keyCodes);
+                subscriber.HandleKeysDown(keyCodes);
+            }
+        }
+
+        public void PublishKeyPressed(char keyChar)
+        {
+            foreach (IKeyEventSubscriber subscriber in this.subscribers)
+            {
+                subscriber.HandleKeyPressed(keyChar);
             }
         }
     }

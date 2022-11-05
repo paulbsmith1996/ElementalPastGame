@@ -1,4 +1,5 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.Entities;
 using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.Rendering;
 using System;
@@ -48,15 +49,6 @@ namespace ElementalPastGame.GameObject
         public Boolean IsCollidable { get; set; }
 
         /// <summary>
-        /// This ImageID should be specific to the kind of GameObject that inherits from this
-        /// interface. For example, there should be a "player image ID" in the CommonConstants
-        /// class or a "goblin image ID".
-        /// </summary>
-        public String ImageID { get; set; }
-
-        public Image? Image { get; set; }
-
-        /// <summary>
         /// This EntityID must be unique for every GameObject. It is eventually used 
         /// to identify the IGameObjectModel when deciding if it should be removed from the
         /// overworld.
@@ -67,7 +59,9 @@ namespace ElementalPastGame.GameObject
         public List<Direction> Moves { get; set; }
         public bool shouldCycleMoves { get; set; }
         public MovementType movementType { get; set; }
-        
+
+        public EntityDataModel dataModel { get; set; }
+
         public void LoadIfNeeded();
         public void Unload();
         public void MoveTo(int NewX, int NewY, bool animated);

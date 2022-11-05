@@ -1,6 +1,7 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.Components.ComponentSequences;
 using ElementalPastGame.Rendering;
+using ElementalPastGame.Rendering.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -194,16 +195,16 @@ namespace ElementalPastGame.Components
 
             Rectangle bounds = new Rectangle(0, 0, this.width, this.height);
             Brush brush = new SolidBrush(this.backgroundColor);
-            g.FillPath(brush, GameTextBox.RoundedRect(bounds, this.cornerRadius));
+            g.FillPath(brush, GraphicsPathsFactory.RoundedRect(bounds, this.cornerRadius));
 
             Pen borderPen = new Pen(this.borderColor);
             borderPen.Width = 4;
             int halfBorderPenWidth = (int)borderPen.Width / 2;
             Rectangle borderBounds = new Rectangle(halfBorderPenWidth, halfBorderPenWidth, this.width - 2 * halfBorderPenWidth, this.height - 2 * halfBorderPenWidth);
-            g.DrawPath(borderPen, GameTextBox.RoundedRect(borderBounds, this.cornerRadius - halfBorderPenWidth));
+            g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(borderBounds, this.cornerRadius - halfBorderPenWidth));
 
             Rectangle innerBorderBounds = new Rectangle(TextComponentConstants.INNER_RECT_OFFSET, TextComponentConstants.INNER_RECT_OFFSET, this.width - 2 * TextComponentConstants.INNER_RECT_OFFSET, this.height - 2 * TextComponentConstants.INNER_RECT_OFFSET);
-            g.DrawPath(borderPen, GameTextBox.RoundedRect(innerBorderBounds, this.cornerRadius));
+            g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(innerBorderBounds, this.cornerRadius));
 
             int currentX = TextComponentConstants.MENU_ITEM_HORIZONTAL_SPACING;
             int maximalRowHeight = (int)g.MeasureString("L", TextComponentConstants.FONT).Height;

@@ -1,4 +1,5 @@
 ﻿using ElementalPastGame.Rendering;
+using ElementalPastGame.Rendering.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing.Drawing2D;
@@ -56,16 +57,16 @@ namespace ElementalPastGame.Components
 
             Rectangle bounds = new Rectangle(0, 0, this.width, this.height);
             Brush brush = new SolidBrush(this.backgroundColor);
-            g.FillPath(brush, GameTextBox.RoundedRect(bounds, this.cornerRadius));
+            g.FillPath(brush, GraphicsPathsFactory.RoundedRect(bounds, this.cornerRadius));
 
             Pen borderPen = new Pen(this.borderColor);
             borderPen.Width = 4;
             int halfBorderPenWidth = (int)borderPen.Width / 2;
             Rectangle borderBounds = new Rectangle(halfBorderPenWidth, halfBorderPenWidth, this.width - 2 * halfBorderPenWidth, this.height - 2 * halfBorderPenWidth);
-            g.DrawPath(borderPen, GameTextBox.RoundedRect(borderBounds, this.cornerRadius - halfBorderPenWidth));
+            g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(borderBounds, this.cornerRadius - halfBorderPenWidth));
 
             Rectangle innerBorderBounds = new Rectangle(TextComponentConstants.INNER_RECT_OFFSET, TextComponentConstants.INNER_RECT_OFFSET, this.width - 2 * TextComponentConstants.INNER_RECT_OFFSET, this.height - 2 * TextComponentConstants.INNER_RECT_OFFSET);
-            g.DrawPath(borderPen, GameTextBox.RoundedRect(innerBorderBounds, this.cornerRadius));
+            g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(innerBorderBounds, this.cornerRadius));
 
             g.DrawString(this.text, TextComponentConstants.FONT, Brushes.White, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET);
 
@@ -84,38 +85,6 @@ namespace ElementalPastGame.Components
             };
 
             return (RenderingModel)this.renderingModel;
-        }
-
-        internal static GraphicsPath RoundedRect(Rectangle bounds, int radius)
-        {
-            int diameter = radius * 2;
-            Size size = new Size(diameter, diameter);
-            Rectangle arc = new Rectangle(bounds.Location, size);
-            GraphicsPath path = new GraphicsPath();
-
-            if (radius == 0)
-            {
-                path.AddRectangle(bounds);
-                return path;
-            }
-
-            // top left arc  
-            path.AddArc(arc, 180, 90);
-
-            // top right arc  
-            arc.X = bounds.Right - diameter;
-            path.AddArc(arc, 270, 90);
-
-            // bottom right arc  
-            arc.Y = bounds.Bottom - diameter;
-            path.AddArc(arc, 0, 90);
-
-            // bottom left arc 
-            arc.X = bounds.Left;
-            path.AddArc(arc, 90, 90);
-
-            path.CloseFigure();
-            return path;
         }
     }
 }

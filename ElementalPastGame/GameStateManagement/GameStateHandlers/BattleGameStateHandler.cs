@@ -46,10 +46,13 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal List<EntityDataModel> enemies;
         internal List<EntityDataModel> allies;
+        internal List<RenderingModel> allyRenderingModels = new();
+        internal List<RenderingModel> enemyRenderingModels = new();
         internal int selectedEnemyIndex;
 
         internal Bitmap background;
         internal Bitmap backDrop;
+        internal Bitmap enemySelector;
 
         internal DateTime lastEnemySelectionInputTime;
         internal double timeSinceLastEnemySelectionMove;
@@ -72,6 +75,46 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
             this.lastEnemySelectionInputTime = DateTime.Now;
             this.timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
+
+            this.ComputeGameObjectRenderingModels();
+        }
+
+        internal void ComputeGameObjectRenderingModels()
+        {
+            for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
+            {
+                EntityDataModel ally = this.allies.ElementAt(allyIndex);
+                RenderingModel allyRenderingModel = this.ComputeRenderingModel(ally, allyIndex, false);
+                this.allyRenderingModels.Add(allyRenderingModel);
+            }
+
+            for (int enemyIndex = 0; enemyIndex < this.enemies.Count; enemyIndex++)
+            {
+                EntityDataModel enemy = this.enemies.ElementAt(enemyIndex);
+                RenderingModel enemyRenderingModel = this.ComputeRenderingModel(enemy, enemyIndex, true);
+                this.enemyRenderingModels.Add(enemyRenderingModel);
+            }
+        }
+
+        internal RenderingModel ComputeRenderingModel(EntityDataModel dataModel, int lineUpIndex, bool isEnemy)
+        {
+            Point entityLocation = this.ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
+
+            double perspectiveFactor = Math.Pow(this.ComputeSqueezeFactor(entityLocation.Y), 1.1);
+            int entityWidth = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            int entityHeight = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+
+            Bitmap allyBitmap = new Bitmap(dataModel.Image, entityWidth, entityHeight);
+            List<Bitmap> bitmaps = new() { allyBitmap };
+
+            return new()
+            {
+                X = entityLocation.X,
+                Y = entityLocation.Y,
+                Width = entityWidth,
+                Height = entityHeight,
+                Bitmaps = bitmaps
+            };
         }
 
         public void HandleKeyPressed(char keyChar)
@@ -292,6 +335,12 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             Rectangle bounds = new Rectangle(0, 0, selectorDimension, selectorDimension);
             graphics.DrawPath(pen, GraphicsPathsFactory.RoundedRect(bounds, 10));
 
+            //if (this.enemySelector != null)
+            //{
+            //    this.enemySelector.Dispose();
+            //}
+            //this.enemySelector = selectorBitmap;
+
             RenderingModel selectorRenderingModel = new()
             {
                 X = selectedEnemyLocation.X - BattleStateConstants.ENEMY_SELECTOR_PADDING,
@@ -309,52 +358,20 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal void UpdateGameObjects()
         {
-            for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
+            foreach (RenderingModel allyRenderingModel in this.allyRenderingModels)
             {
-                EntityDataModel ally = this.allies.ElementAt(allyIndex);
-                if (ally == null)
+                if (this.gameStateHandlerDelegate != null)
                 {
-                    continue;
+                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyRenderingModel);
                 }
-
-                this.UpdateGameObject(ally, allyIndex, false);
             }
 
-            for (int enemyIndex = 0; enemyIndex < this.enemies.Count; enemyIndex++)
+            foreach (RenderingModel enemyRenderingModel in this.enemyRenderingModels)
             {
-                EntityDataModel enemy = this.enemies.ElementAt((int)enemyIndex);
-                if (enemy == null)
+                if (this.gameStateHandlerDelegate != null)
                 {
-                    continue;
+                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, enemyRenderingModel);
                 }
-
-                this.UpdateGameObject(enemy, enemyIndex, true);
-            }
-        }
-
-        internal void UpdateGameObject(EntityDataModel gameObjectModel, int lineUpIndex, bool isEnemy)
-        {
-            Point entityLocation = this.ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
-
-            double perspectiveFactor = Math.Pow(this.ComputeSqueezeFactor(entityLocation.Y), 1.1);
-            int entityWidth = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-            int entityHeight = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-
-            Bitmap allyBitmap = new Bitmap(gameObjectModel.Image, entityWidth, entityHeight);
-            List<Bitmap> bitmaps = new() { allyBitmap };
-
-            RenderingModel allyModel = new()
-            {
-                X = entityLocation.X,
-                Y = entityLocation.Y,
-                Width = entityWidth,
-                Height = entityHeight,
-                Bitmaps = bitmaps
-            };
-
-            if (this.gameStateHandlerDelegate != null)
-            {
-                this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyModel);
             }
         }
 

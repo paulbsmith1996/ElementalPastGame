@@ -49,6 +49,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal int selectedEnemyIndex;
 
         internal Bitmap background;
+        internal Bitmap backDrop;
 
         internal DateTime lastEnemySelectionInputTime;
         internal double timeSinceLastEnemySelectionMove;
@@ -224,9 +225,12 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal void UpdateBackground()
         {
-            Bitmap emptyBitmap = new Bitmap(CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
-            Graphics graphics = Graphics.FromImage(emptyBitmap);
-            graphics.FillRectangle(Brushes.LightBlue, 0, 0, CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
+            if (this.backDrop == null) {
+                Bitmap emptyBitmap = new Bitmap(CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
+                Graphics graphics = Graphics.FromImage(emptyBitmap);
+                graphics.FillRectangle(Brushes.LightBlue, 0, 0, CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
+                this.backDrop = emptyBitmap;
+            }
 
             RenderingModel backgroundRenderingModel = new()
             {
@@ -234,7 +238,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 Y = 0,
                 Width = CommonConstants.GAME_DIMENSION,
                 Height = CommonConstants.GAME_DIMENSION,
-                Bitmaps = new List<Bitmap>() { emptyBitmap }
+                Bitmaps = new List<Bitmap>() { this.backDrop }
             };
 
             Bitmap shearedBackground = this.GetBackground();
@@ -408,7 +412,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             {
                 newX = midX + ((point.X - midX) * squeezeFactor);
             }
-            
+
 
             return isEnemy ? CommonConstants.GAME_DIMENSION - (int)newX : (int)newX;
         }
@@ -446,7 +450,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 return this.background;
             }
 
-            this.background =  TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
+            this.background = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
             return this.background;
         }
     }

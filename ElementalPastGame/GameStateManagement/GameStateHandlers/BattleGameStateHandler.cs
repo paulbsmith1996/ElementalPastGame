@@ -49,6 +49,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal List<RenderingModel> allyRenderingModels = new();
         internal List<RenderingModel> enemyRenderingModels = new();
         internal int selectedEnemyIndex;
+        internal List<int> deadEnemyIndexes = new();
 
         internal Bitmap background;
         internal Bitmap backDrop;
@@ -192,20 +193,53 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             switch (lastKey)
             {
                 case Keys.Up:
-                    if (this.selectedEnemyIndex > 0)
+                    int backAliveIndex = this.SeekNextAliveEnemyIndex(false);
+                    if (backAliveIndex >= 0)
                     {
-                        this.selectedEnemyIndex--;
+                        this.selectedEnemyIndex = backAliveIndex;
                     }
                     break;
                 case Keys.Down:
-                    if (this.selectedEnemyIndex < this.enemies.Count - 1)
+                    int nextAliveIndex = this.SeekNextAliveEnemyIndex(true);
+                    if (nextAliveIndex >= 0)
                     {
-                        this.selectedEnemyIndex++;
+                        this.selectedEnemyIndex = nextAliveIndex;
                     }
                     break;
             }
 
             this.lastEnemySelectionInputTime = handleKeysDownTime;
+        }
+
+        internal int SeekNextAliveEnemyIndex(bool forward)
+        {
+            int newSelectedEnemyIndex = forward ? this.selectedEnemyIndex + 1 : this.selectedEnemyIndex - 1;
+            if (newSelectedEnemyIndex < 0 || newSelectedEnemyIndex >= this.enemies.Count)
+            {
+                return -1;
+            }
+
+            if (forward)
+            {
+                while (newSelectedEnemyIndex < this.enemies.Count && this.enemies.ElementAt(newSelectedEnemyIndex).isDead)
+                {
+                    newSelectedEnemyIndex++;
+                }
+            }
+            else
+            {
+                while (newSelectedEnemyIndex > 0 && this.enemies.ElementAt(newSelectedEnemyIndex).isDead)
+                {
+                    newSelectedEnemyIndex--;
+                }
+            }
+
+            if (newSelectedEnemyIndex < 0 || newSelectedEnemyIndex >= this.enemies.Count)
+            {
+                return -1;
+            }
+
+            return this.enemies.ElementAt(newSelectedEnemyIndex).isDead ? -1 : newSelectedEnemyIndex;
         }
 
         internal void ResolveAttackOnEnemies() {
@@ -214,6 +248,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
             if (selectedEnemyModel.isDead)
             {
+                int nextAliveIndex = this.SeekNextAliveEnemyIndex(true);
+                this.selectedEnemyIndex = nextAliveIndex != -1 ? nextAliveIndex : this.SeekNextAliveEnemyIndex(false);
                 this.UpdateGameObjectRenderingModels();
             }
 

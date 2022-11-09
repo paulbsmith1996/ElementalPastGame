@@ -34,6 +34,7 @@ namespace ElementalPastGame.TileManagement
 
         public void Load()
         {
+            this.TileLoadState = TileLoadState.Loaded;
             if (this.Images.Count > 0)
             {
                 return;
@@ -48,8 +49,6 @@ namespace ElementalPastGame.TileManagement
                 else {
                     this.Images.Add(new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION + 1, CommonConstants.TILE_DIMENSION + 1));
                 }
-
-                this.TileLoadState = TileLoadState.Loaded;
             }
         }
 

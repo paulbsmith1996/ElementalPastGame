@@ -32,6 +32,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal static ITileMapManager TextureMapManager = TileMapManager.GetInstance();
 
+        internal RenderingModel playerRenderingModel;
+
         public static OverworldGameStateHandler getInstance()
         {
             if (_instance != null)
@@ -54,6 +56,19 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             this.activeTileSetManager = ActiveTileSetManager.GetInstance();
 
             this.activeEntityManager = ActiveEntityManager.GetInstance();
+
+            // TODO: this is suppoed to represent the player so def move it out of here
+            Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
+            List<Bitmap> blankBitmapList = new List<Bitmap>();
+            blankBitmapList.Add(BlankBitmap);
+            this.playerRenderingModel = new()
+            {
+                X = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
+                Y = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
+                Width = CommonConstants.TILE_DIMENSION,
+                Height = CommonConstants.TILE_DIMENSION,
+                Bitmaps = blankBitmapList,
+            };
 
             // TODO: probably remove this line later
             this.RedrawForNonnullDelegate();
@@ -216,32 +231,31 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal void UpdateBackgroundWithOffset(double offset)
         {
+            DateTime startUpdateBackground = DateTime.Now;
             this.activeTileSetManager.Update(this.PreviousCenterX, this.PreviousCenterY, this.CenterX, this.CenterY, this.isAnimating, offset);
+            DateTime endTileSetUpdate = DateTime.Now;
 
-            // TODO: this is suppoed to represent the player so def move it out of here
-            Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
-            List<Bitmap> blankBitmapList = new List<Bitmap>();
-            blankBitmapList.Add(BlankBitmap);
-            RenderingModel playerModel = new()
-            {
-                X = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
-                Y = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,
-                Width = CommonConstants.TILE_DIMENSION,
-                Height = CommonConstants.TILE_DIMENSION,
-                Bitmaps = blankBitmapList,
-            };
+            this.UpdateBitmapForRenderingModelForNonnullDelegate(this.playerRenderingModel);
+            DateTime endUpdateBackground = DateTime.Now;
+            double timeToUpdateBackground = (endUpdateBackground - startUpdateBackground).TotalMilliseconds;
+            Console.WriteLine(timeToUpdateBackground);
 
-            this.UpdateBitmapForRenderingModelForNonnullDelegate(playerModel);
+            double timeToUpdateTileSet = (endTileSetUpdate - startUpdateBackground).TotalMilliseconds;
+            Console.WriteLine(timeToUpdateTileSet);
         }
 
         internal void UpdateForegroundWithOffset(double animationXOffset, double animationYOffset)
         {
+            DateTime startUpdateForeground = DateTime.Now;
             foreach (IGameObjectModel gameObjectModel in this.activeEntityManager.GetActiveEntities(this.CenterX, this.CenterY))
             {
                 gameObjectModel.UpdateModelForNewRunloop();
                 RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, animationXOffset, animationYOffset);
                 this.UpdateBitmapForRenderingModelForNonnullDelegate(renderingModel);
             }
+            DateTime endUpdateForeground = DateTime.Now;
+            double timeToUpdateForeground = (endUpdateForeground - startUpdateForeground).TotalMilliseconds;
+            Console.WriteLine(timeToUpdateForeground);
         }
 
         internal Boolean ValidateNewLocation(int X, int Y)

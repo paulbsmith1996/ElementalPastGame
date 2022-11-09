@@ -81,6 +81,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal void ComputeGameObjectRenderingModels()
         {
+            this.allyRenderingModels = new();
             for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
             {
                 EntityDataModel ally = this.allies.ElementAt(allyIndex);
@@ -88,6 +89,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 this.allyRenderingModels.Add(allyRenderingModel);
             }
 
+            this.enemyRenderingModels = new();
             for (int enemyIndex = 0; enemyIndex < this.enemies.Count; enemyIndex++)
             {
                 EntityDataModel enemy = this.enemies.ElementAt(enemyIndex);
@@ -104,8 +106,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             int entityWidth = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
             int entityHeight = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
 
-            Bitmap allyBitmap = new Bitmap(dataModel.Image, entityWidth, entityHeight);
-            List<Bitmap> bitmaps = new() { allyBitmap };
+            Bitmap dataModelBitmap = new Bitmap(dataModel.Image, entityWidth, entityHeight);
+            List<Bitmap> bitmaps = new() { dataModelBitmap };
 
             return new()
             {
@@ -157,8 +159,13 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     this.UpdateEnemySelection(keyCodes);
                     break;
                 case BattleState.MoveResolution:
+                    this.ResolveAttackOnEnemies();
                     break;
                 case BattleState.End:
+                    if (this.gameStateHandlerDelegate != null)
+                    {
+                        ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld);
+                    }
                     break;
             }
 
@@ -199,6 +206,36 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
 
             this.lastEnemySelectionInputTime = handleKeysDownTime;
+        }
+
+        internal void ResolveAttackOnEnemies() {
+            EntityDataModel selectedEnemyModel = this.enemies.ElementAt(this.selectedEnemyIndex);
+            selectedEnemyModel.Damage(20);
+
+            if (selectedEnemyModel.isDead)
+            {
+                this.ComputeGameObjectRenderingModels();
+            }
+
+            if (!this.BattleVictorious()) {
+                this.state = BattleState.MoveSelection;
+            }
+            else
+            {
+                this.state = BattleState.End;
+            }
+        }
+
+        internal bool BattleVictorious()
+        {
+            foreach (EntityDataModel enemyDataModel in this.enemies) { 
+                if (!enemyDataModel.isDead)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public void MenuDidResolve(TextMenu menu, string key)

@@ -17,6 +17,7 @@ namespace ElementalPastGame.GameObject.Entities
         public int alchemyPotency { get; set; }
         public int strength { get; set; }
         public int physicalResistance { get; set; }
+        public bool isDead { get; set; }
 
         /// <summary>
         /// This ImageID should be specific to the kind of GameObject that inherits from this
@@ -68,6 +69,21 @@ namespace ElementalPastGame.GameObject.Entities
             this.strength = 200 + level * 10;
             this.physicalResistance = 200 + level * 10;
             this.ImageID = TextureMapping.Goblin;
+        }
+
+        public void Damage(int damage)
+        {
+            if (this.isDead)
+            {
+                return;
+            }
+
+            this.health -= damage;
+            if (this.health <= 0)
+            {
+                this.isDead = true;
+                this.Image = TextureMapping.Mapping[TextureMapping.Dead_Goblin];
+            }
         }
 
         public void Load()

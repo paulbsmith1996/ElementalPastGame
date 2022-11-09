@@ -1,0 +1,6 @@
+﻿Bugs To Fix:
+
+Overworld:
+1) Holding down a key that is not directional causes player to stop moving
+
+Battle:

@@ -76,10 +76,10 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             this.lastEnemySelectionInputTime = DateTime.Now;
             this.timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
 
-            this.ComputeGameObjectRenderingModels();
+            this.UpdateGameObjectRenderingModels();
         }
 
-        internal void ComputeGameObjectRenderingModels()
+        internal void UpdateGameObjectRenderingModels()
         {
             this.allyRenderingModels = new();
             for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
@@ -214,7 +214,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
             if (selectedEnemyModel.isDead)
             {
-                this.ComputeGameObjectRenderingModels();
+                this.UpdateGameObjectRenderingModels();
             }
 
             if (!this.BattleVictorious()) {

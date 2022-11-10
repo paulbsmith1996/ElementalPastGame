@@ -1,11 +1,12 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace ElementalPastGame.GameObject.Utility
+namespace ElementalPastGame.GameObject.EntityManagement
 {
     public interface IActiveEntityManager
     {
@@ -20,5 +21,9 @@ namespace ElementalPastGame.GameObject.Utility
 
         public void RemoveGameObjectFromLocation(IGameObjectModel gameObjectModel, Location location);
         public void AddGameObjectToLocation(IGameObjectModel gameObjectModel, Location location);
+
+        public void MarkEntityIDDead(long entityID);
+
+        public List<EntityDataModel> enemiesForEncounterID(long encounterID);
     }
 }

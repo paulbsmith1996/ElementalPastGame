@@ -10,6 +10,8 @@ using System.Text;
 using System.Threading.Tasks;
 using ElementalPastGame.KeyInput;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
+using ElementalPastGame.GameStateManagement;
+using ElementalPastGame.GameObject.EntityManagement;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
@@ -149,7 +151,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     if (this.gameStateHandlerDelegate != null)
                     {
                         this.MoveObjectAwayFromCenter(gameObjectModel);
-                        ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Battle);
+                        Dictionary<String, Object> transitionDictionary = new Dictionary<String, Object>() { { GameStateTransitionConstants.ENCOUNTER_ID_KEY, gameObjectModel.EntityID} };
+                        ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Battle, transitionDictionary);
                     }
                     return;
                 }
@@ -310,17 +313,25 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
         }
 
-        public void TransitionFromGameState(GameState state)
+        public void TransitionFromGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             switch(state)
             {
                 case GameState.Battle:
-
+                    Object battleVictoriousObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.BATTLE_VICTORIOUS_KEY);
+                    if (battleVictoriousObject != null && (bool)battleVictoriousObject)
+                    {
+                        Object entityIDObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.ENCOUNTER_ID_KEY);
+                        if (entityIDObject != null)
+                        {
+                            this.activeEntityManager.MarkEntityIDDead((long)entityIDObject);
+                        }
+                    }
                     break;
             }
         }
 
-        public void TransitionToGameState(GameState state)
+        public void TransitionToGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             // So far we just no-op here
         }

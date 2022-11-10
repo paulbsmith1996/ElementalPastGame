@@ -14,8 +14,8 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         public void HandleKeysDown(List<Keys> keyCodes);
         public void HandleKeyPressed(char keyChar);
 
-        public void TransitionFromGameState(GameState state);
-        public void TransitionToGameState(GameState state);
+        public void TransitionFromGameState(GameState state, Dictionary<String, Object> transitionDictionary);
+        public void TransitionToGameState(GameState state, Dictionary<String, Object> transitionDictionary);
 
     }
 
@@ -24,6 +24,6 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         public void IGameStateHandlerNeedsRedraw(IGameStateHandler gameStateHandler);
         public void IGameStateHandlerNeedsBitmapUpdateForRenderingModel(IGameStateHandler gameStateHandler, RenderingModel renderingModel);
 
-        public void IGameStateHandlerNeedsGameStateUpdate(IGameStateHandler gameStateHandler, GameState gameState);
+        public void IGameStateHandlerNeedsGameStateUpdate(IGameStateHandler gameStateHandler, GameState gameState, Dictionary<String, Object> transitionDictionary);
     }
 }

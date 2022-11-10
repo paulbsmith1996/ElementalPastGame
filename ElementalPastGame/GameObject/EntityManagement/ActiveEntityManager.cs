@@ -1,5 +1,6 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.Enemies;
+using ElementalPastGame.GameObject.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static ElementalPastGame.GameObject.IGameObjectModel;
 
-namespace ElementalPastGame.GameObject.Utility
+namespace ElementalPastGame.GameObject.EntityManagement
 {
     public class ActiveEntityManager : IActiveEntityManager
     {
@@ -15,6 +16,8 @@ namespace ElementalPastGame.GameObject.Utility
         internal static ActiveEntityManager? _instance;
         internal Dictionary<Location, IGameObjectModel> EntitiesByLocation = new();
         internal List<IGameObjectModel> previousActiveEntityModels = new();
+        internal HashSet<long> deadEntityIDs = new();
+        internal Dictionary<long, List<EntityDataModel>> enemyListsByEncounterID = new();
         public static ActiveEntityManager GetInstance()
         {
             if (_instance != null)
@@ -37,52 +40,69 @@ namespace ElementalPastGame.GameObject.Utility
                 for (int YCoordinate = CenterY - CommonConstants.TILE_VIEW_DISTANCE - 1; YCoordinate <= CenterY + CommonConstants.TILE_VIEW_DISTANCE + 1; YCoordinate++)
                 {
                     Location location = new() { X = XCoordinate, Y = YCoordinate };
-                    IGameObjectModel? gameObjectModel = this.EntitiesByLocation.GetValueOrDefault(location);
-                    if (gameObjectModel != null)
+                    IGameObjectModel? gameObjectModel = EntitiesByLocation.GetValueOrDefault(location);
+                    if (gameObjectModel != null && !deadEntityIDs.Contains(gameObjectModel.EntityID))
                     {
                         // TODO: needed for loading
                         gameObjectModel.LoadIfNeeded();
                         activeEntities.Add(gameObjectModel);
-                        this.previousActiveEntityModels.Remove(gameObjectModel);
+                        previousActiveEntityModels.Remove(gameObjectModel);
                     }
                 }
             }
-            foreach (IGameObjectModel inactiveGameObjectModel in this.previousActiveEntityModels)
+            foreach (IGameObjectModel inactiveGameObjectModel in previousActiveEntityModels)
             {
                 inactiveGameObjectModel.Unload();
             }
-            this.previousActiveEntityModels = activeEntities;
+            previousActiveEntityModels = activeEntities;
             return activeEntities;
         }
 
         public void RemoveGameObjectFromLocation(IGameObjectModel gameObjectModel, Location location)
         {
             // TODO: This needs to be updated once several game objects can be in the same location
-            this.EntitiesByLocation.Remove(location);
+            EntitiesByLocation.Remove(location);
         }
 
         public void AddGameObjectToLocation(IGameObjectModel gameObjectModel, Location location)
         {
-            this.AddEntityToMapping(gameObjectModel);
+            AddEntityToMapping(gameObjectModel);
+        }
+
+        public void MarkEntityIDDead(long entityID)
+        {
+            deadEntityIDs.Add(entityID);
+        }
+
+        public List<EntityDataModel> enemiesForEncounterID(long encounterID)
+        {
+            return this.enemyListsByEncounterID[encounterID];
         }
 
         internal ActiveEntityManager()
         {
-            this.LoadEntitiesByLocation();
+            LoadEntitiesByLocation();
         }
         internal void LoadEntitiesByLocation()
         {
             IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X - 10, CommonConstants.GAME_START_LOCATION.Y, 5);
-            List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
-            goblin1.shouldCycleMoves = true;
-            goblin1.Moves = goblin1Moves;
+            //List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
+            //goblin1.shouldCycleMoves = true;
+            //goblin1.Moves = goblin1Moves;
             goblin1.movementType = MovementType.Aggressive;
             this.AddEntityToMapping(goblin1);
+            List<EntityDataModel> goblin1EncounterList = new() { new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel };
+            this.RegisterEnemyListForEncounterID(goblin1EncounterList, goblin1.EntityID);
         }
 
         internal void AddEntityToMapping(IGameObjectModel gameObjectModel)
         {
-            this.EntitiesByLocation.Add(gameObjectModel.Location, gameObjectModel);
+            EntitiesByLocation.Add(gameObjectModel.Location, gameObjectModel);
+        }
+
+        internal void RegisterEnemyListForEncounterID(List<EntityDataModel> enemies, long encounterID)
+        {
+            this.enemyListsByEncounterID[encounterID] = enemies;
         }
     }
 }

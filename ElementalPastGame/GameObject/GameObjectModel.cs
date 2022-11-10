@@ -1,5 +1,6 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.Entities;
+using ElementalPastGame.GameObject.EntityManagement;
 using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.Rendering;
@@ -18,7 +19,6 @@ namespace ElementalPastGame.GameObject
         public Location Location { get; set; }
         public GameObjectSize Size { get; set; }
 
-        internal static long CurrentEntityID = 1;
         public long EntityID { get; set; }
         public Boolean IsCollidable { get; set; }
         public double XAnimationOffset { get; set; }
@@ -40,12 +40,12 @@ namespace ElementalPastGame.GameObject
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
             this.dataModel = new EntityDataModel(type, level);
-            this.EntityID = GameObjectModel.CurrentEntityID;
+
+            // Use Szudik's function to uniquely hash every X,Y pair to a unique entity ID
+            this.EntityID = X >= Y ? X * X + X + Y : X + Y * Y;
 
             // TODO: we don't necessarily need to load everything now
             this.LoadIfNeeded();
-
-            GameObjectModel.CurrentEntityID++;
         }
 
         public void LoadIfNeeded()

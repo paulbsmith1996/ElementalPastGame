@@ -1,7 +1,9 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.Enemies;
+using ElementalPastGame.GameObject.Entities;
 using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
+using ElementalPastGame.GameStateManagement.GameStateHandlers.Battle;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
@@ -76,13 +78,13 @@ namespace ElementalPastGame.GameStateManagement
             pictureBoxManager.UpdateBitmapForIRenderingModel(renderingModel);
         }
 
-        public void IGameStateHandlerNeedsGameStateUpdate(IGameStateHandler gameStateHandler, GameState gameState)
+        public void IGameStateHandlerNeedsGameStateUpdate(IGameStateHandler gameStateHandler, GameState gameState, Dictionary<String, Object> transitionDictionary)
         {
             gameStateHandler.gameStateHandlerDelegate = null;
             this.previousGameState = this.gameState;
             this.gameState = gameState;
 
-            this.currentGameStateHandler.TransitionToGameState(this.gameState);
+            this.currentGameStateHandler.TransitionToGameState(this.gameState, transitionDictionary);
 
             switch (gameState)
             {
@@ -90,14 +92,20 @@ namespace ElementalPastGame.GameStateManagement
                     this.currentGameStateHandler = this.overworldGameStateHandler;
                     break;
                 case GameState.Battle:
-                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), new() { new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel }, 
-                                                                                                          new() { new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel });
+                    Object encounterIDObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.ENCOUNTER_ID_KEY);
+                    long encounterID = -1;
+                    if (encounterIDObject != null)
+                    {
+                        encounterID = (long)encounterIDObject;
+                    }
+                    List<EntityDataModel> allies = new() { new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel, new Goblin(0, 0, 5).dataModel };
+                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), allies, encounterID);
                     break;
             }
 
             this.currentGameStateHandler.gameStateHandlerDelegate = this;
 
-            this.currentGameStateHandler.TransitionFromGameState(this.gameState);
+            this.currentGameStateHandler.TransitionFromGameState(this.previousGameState, transitionDictionary);
 
         }
     }

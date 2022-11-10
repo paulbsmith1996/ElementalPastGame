@@ -11,7 +11,8 @@ using ElementalPastGame.Common;
 using ElementalPastGame.Components;
 using ElementalPastGame.Components.ComponentSequences;
 using ElementalPastGame.GameObject.Entities;
-using ElementalPastGame.GameStateManagement.GameStateHandlers;
+using ElementalPastGame.GameObject.EntityManagement;
+using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.Rendering.Utility;
@@ -20,7 +21,7 @@ using static System.Windows.Forms.Design.AxImporter;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 using static ElementalPastGame.Items.Item;
 
-namespace ElementalPastGame.GameObject.GameStateHandlers
+namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 {
     public class BattleGameStateHandler : IGameStateHandler, ITextMenuObserver
     {
@@ -33,9 +34,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             End,
         }
 
-        public static String ESCAPE_STRING = "ESCAPE";
-        public static String CONSUME_STRING = "CONSUME";
-        public static String ATTACK_STRING = "ATTACK";
+        public static string ESCAPE_STRING = "ESCAPE";
+        public static string CONSUME_STRING = "CONSUME";
+        public static string ATTACK_STRING = "ATTACK";
 
         internal Color enemySelectorColor;
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
@@ -50,6 +51,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal List<RenderingModel> enemyRenderingModels = new();
         internal int selectedEnemyIndex;
         internal List<int> deadEnemyIndexes = new();
+        internal long encounterID;
 
         internal Bitmap background;
         internal Bitmap backDrop;
@@ -58,54 +60,55 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal DateTime lastEnemySelectionInputTime;
         internal double timeSinceLastEnemySelectionMove;
 
-        public BattleGameStateHandler(Inventory inventory, List<EntityDataModel> allies, List<EntityDataModel> enemies)
+        public BattleGameStateHandler(Inventory inventory, List<EntityDataModel> allies, long encounterID)
         {
-            this.state = BattleState.Start;
+            state = BattleState.Start;
             this.inventory = inventory;
 
-            if (enemies.Count == 0) {
+            this.encounterID = encounterID;
+            this.enemies = ActiveEntityManager.GetInstance().enemiesForEncounterID(encounterID);
+            if (enemies.Count == 0)
+            {
                 throw new ArgumentException("Battle must be created with at least 1 enemy.");
             }
-
-            this.enemies = enemies;
-            this.selectedEnemyIndex = 0;
+            selectedEnemyIndex = 0;
 
             this.allies = allies;
 
-            this.enemySelectorColor = Color.White;
+            enemySelectorColor = Color.White;
 
-            this.lastEnemySelectionInputTime = DateTime.Now;
-            this.timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
+            lastEnemySelectionInputTime = DateTime.Now;
+            timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
 
-            this.UpdateGameObjectRenderingModels();
+            UpdateGameObjectRenderingModels();
         }
 
         internal void UpdateGameObjectRenderingModels()
         {
-            this.allyRenderingModels = new();
-            for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
+            allyRenderingModels = new();
+            for (int allyIndex = 0; allyIndex < allies.Count; allyIndex++)
             {
-                EntityDataModel ally = this.allies.ElementAt(allyIndex);
-                RenderingModel allyRenderingModel = this.ComputeRenderingModel(ally, allyIndex, false);
-                this.allyRenderingModels.Add(allyRenderingModel);
+                EntityDataModel ally = allies.ElementAt(allyIndex);
+                RenderingModel allyRenderingModel = ComputeRenderingModel(ally, allyIndex, false);
+                allyRenderingModels.Add(allyRenderingModel);
             }
 
-            this.enemyRenderingModels = new();
-            for (int enemyIndex = 0; enemyIndex < this.enemies.Count; enemyIndex++)
+            enemyRenderingModels = new();
+            for (int enemyIndex = 0; enemyIndex < enemies.Count; enemyIndex++)
             {
-                EntityDataModel enemy = this.enemies.ElementAt(enemyIndex);
-                RenderingModel enemyRenderingModel = this.ComputeRenderingModel(enemy, enemyIndex, true);
-                this.enemyRenderingModels.Add(enemyRenderingModel);
+                EntityDataModel enemy = enemies.ElementAt(enemyIndex);
+                RenderingModel enemyRenderingModel = ComputeRenderingModel(enemy, enemyIndex, true);
+                enemyRenderingModels.Add(enemyRenderingModel);
             }
         }
 
         internal RenderingModel ComputeRenderingModel(EntityDataModel dataModel, int lineUpIndex, bool isEnemy)
         {
-            Point entityLocation = this.ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
+            Point entityLocation = ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
 
-            double perspectiveFactor = Math.Pow(this.ComputeSqueezeFactor(entityLocation.Y), 1.1);
-            int entityWidth = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-            int entityHeight = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            double perspectiveFactor = Math.Pow(ComputeSqueezeFactor(entityLocation.Y), 1.1);
+            int entityWidth = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            int entityHeight = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
 
             Bitmap dataModelBitmap = new Bitmap(dataModel.Image, entityWidth, entityHeight);
             List<Bitmap> bitmaps = new() { dataModelBitmap };
@@ -122,20 +125,20 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public void HandleKeyPressed(char keyChar)
         {
-            switch (this.state)
+            switch (state)
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
-                    this.GetTextComponents().HandleKeyPressed(keyChar);
+                    GetTextComponents().HandleKeyPressed(keyChar);
                     break;
                 case BattleState.EnemySelection:
                     switch (keyChar)
                     {
                         case 's':
-                            this.state = BattleState.MoveResolution;
+                            state = BattleState.MoveResolution;
                             break;
                         case 'd':
-                            this.state = BattleState.MoveSelection;
+                            state = BattleState.MoveSelection;
                             break;
                         default:
                             return;
@@ -150,35 +153,37 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public void HandleKeysDown(List<Keys> keyCodes)
         {
-            switch (this.state)
+            switch (state)
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
-                    this.GetTextComponents().HandleKeyInputs(keyCodes);
+                    GetTextComponents().HandleKeyInputs(keyCodes);
                     break;
                 case BattleState.EnemySelection:
-                    this.UpdateEnemySelection(keyCodes);
+                    UpdateEnemySelection(keyCodes);
                     break;
                 case BattleState.MoveResolution:
-                    this.ResolveAttackOnEnemies();
+                    ResolveAttackOnEnemies();
                     break;
                 case BattleState.End:
-                    if (this.gameStateHandlerDelegate != null)
+                    if (gameStateHandlerDelegate != null)
                     {
-                        ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld);
+                        Dictionary<String, Object> transitionDictionary = new Dictionary<String, Object>() { { GameStateTransitionConstants.BATTLE_VICTORIOUS_KEY, true}, 
+                                                                                                             { GameStateTransitionConstants.ENCOUNTER_ID_KEY, this.encounterID} };
+                        gameStateHandlerDelegate.IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld, transitionDictionary);
                     }
                     break;
             }
 
-            this.Redraw();
+            Redraw();
         }
 
         internal void UpdateEnemySelection(List<Keys> keyCodes)
         {
             DateTime handleKeysDownTime = DateTime.Now;
-            this.timeSinceLastEnemySelectionMove = (handleKeysDownTime - this.lastEnemySelectionInputTime).TotalMilliseconds;
+            timeSinceLastEnemySelectionMove = (handleKeysDownTime - lastEnemySelectionInputTime).TotalMilliseconds;
 
-            if (this.timeSinceLastEnemySelectionMove < CommonConstants.KEY_DEBOUNCE_TIME_MS)
+            if (timeSinceLastEnemySelectionMove < CommonConstants.KEY_DEBOUNCE_TIME_MS)
             {
                 return;
             }
@@ -193,78 +198,81 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             switch (lastKey)
             {
                 case Keys.Up:
-                    int backAliveIndex = this.SeekNextAliveEnemyIndex(false);
+                    int backAliveIndex = SeekNextAliveEnemyIndex(false);
                     if (backAliveIndex >= 0)
                     {
-                        this.selectedEnemyIndex = backAliveIndex;
+                        selectedEnemyIndex = backAliveIndex;
                     }
                     break;
                 case Keys.Down:
-                    int nextAliveIndex = this.SeekNextAliveEnemyIndex(true);
+                    int nextAliveIndex = SeekNextAliveEnemyIndex(true);
                     if (nextAliveIndex >= 0)
                     {
-                        this.selectedEnemyIndex = nextAliveIndex;
+                        selectedEnemyIndex = nextAliveIndex;
                     }
                     break;
             }
 
-            this.lastEnemySelectionInputTime = handleKeysDownTime;
+            lastEnemySelectionInputTime = handleKeysDownTime;
         }
 
         internal int SeekNextAliveEnemyIndex(bool forward)
         {
-            int newSelectedEnemyIndex = forward ? this.selectedEnemyIndex + 1 : this.selectedEnemyIndex - 1;
-            if (newSelectedEnemyIndex < 0 || newSelectedEnemyIndex >= this.enemies.Count)
+            int newSelectedEnemyIndex = forward ? selectedEnemyIndex + 1 : selectedEnemyIndex - 1;
+            if (newSelectedEnemyIndex < 0 || newSelectedEnemyIndex >= enemies.Count)
             {
                 return -1;
             }
 
             if (forward)
             {
-                while (newSelectedEnemyIndex < this.enemies.Count && this.enemies.ElementAt(newSelectedEnemyIndex).isDead)
+                while (newSelectedEnemyIndex < enemies.Count && enemies.ElementAt(newSelectedEnemyIndex).isDead)
                 {
                     newSelectedEnemyIndex++;
                 }
             }
             else
             {
-                while (newSelectedEnemyIndex > 0 && this.enemies.ElementAt(newSelectedEnemyIndex).isDead)
+                while (newSelectedEnemyIndex > 0 && enemies.ElementAt(newSelectedEnemyIndex).isDead)
                 {
                     newSelectedEnemyIndex--;
                 }
             }
 
-            if (newSelectedEnemyIndex < 0 || newSelectedEnemyIndex >= this.enemies.Count)
+            if (newSelectedEnemyIndex < 0 || newSelectedEnemyIndex >= enemies.Count)
             {
                 return -1;
             }
 
-            return this.enemies.ElementAt(newSelectedEnemyIndex).isDead ? -1 : newSelectedEnemyIndex;
+            return enemies.ElementAt(newSelectedEnemyIndex).isDead ? -1 : newSelectedEnemyIndex;
         }
 
-        internal void ResolveAttackOnEnemies() {
-            EntityDataModel selectedEnemyModel = this.enemies.ElementAt(this.selectedEnemyIndex);
+        internal void ResolveAttackOnEnemies()
+        {
+            EntityDataModel selectedEnemyModel = enemies.ElementAt(selectedEnemyIndex);
             selectedEnemyModel.Damage(20);
 
             if (selectedEnemyModel.isDead)
             {
-                int nextAliveIndex = this.SeekNextAliveEnemyIndex(true);
-                this.selectedEnemyIndex = nextAliveIndex != -1 ? nextAliveIndex : this.SeekNextAliveEnemyIndex(false);
-                this.UpdateGameObjectRenderingModels();
+                int nextAliveIndex = SeekNextAliveEnemyIndex(true);
+                selectedEnemyIndex = nextAliveIndex != -1 ? nextAliveIndex : SeekNextAliveEnemyIndex(false);
+                UpdateGameObjectRenderingModels();
             }
 
-            if (!this.BattleVictorious()) {
-                this.state = BattleState.MoveSelection;
+            if (!BattleVictorious())
+            {
+                state = BattleState.MoveSelection;
             }
             else
             {
-                this.state = BattleState.End;
+                state = BattleState.End;
             }
         }
 
-        internal bool BattleVictorious()
+        public bool BattleVictorious()
         {
-            foreach (EntityDataModel enemyDataModel in this.enemies) { 
+            foreach (EntityDataModel enemyDataModel in enemies)
+            {
                 if (!enemyDataModel.isDead)
                 {
                     return false;
@@ -278,27 +286,28 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         {
             if (key.Contains(ESCAPE_STRING))
             {
-                this.Escape();
+                Escape();
             }
             else if (key.Contains(ATTACK_STRING))
             {
-                this.state = BattleState.EnemySelection;
+                state = BattleState.EnemySelection;
             }
         }
 
         internal void Escape()
         {
-            if (this.gameStateHandlerDelegate != null)
+            if (gameStateHandlerDelegate != null)
             {
-                ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld);
+                Dictionary<String, Object> transitionDictionary = new Dictionary<String, Object>() { { GameStateTransitionConstants.BATTLE_VICTORIOUS_KEY, false } };
+                gameStateHandlerDelegate.IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld, transitionDictionary);
             }
         }
 
         internal InteractableTextComponentTree GetTextComponents()
         {
-            if (this.textComponents != null)
+            if (textComponents != null)
             {
-                return this.textComponents;
+                return textComponents;
             }
 
             int textBoxHeight = 125;
@@ -310,10 +319,10 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             TextMenu mainBattleMenu = new(false, 500, 700);
             mainBattleMenu.AddMenuObserver(this);
 
-            List<String> inventoryContents = new();
-            foreach (InventoryItemEntry entry in this.inventory.GetItemEntriesForType(ItemType.Consumable))
+            List<string> inventoryContents = new();
+            foreach (InventoryItemEntry entry in inventory.GetItemEntriesForType(ItemType.Consumable))
             {
-                String itemOptionString = entry.item.displayName + "  (" + entry.count + ")";
+                string itemOptionString = entry.item.displayName + "  (" + entry.count + ")";
                 inventoryContents.Add(itemOptionString);
             }
             TextMenu inventorySubmenu = new TextMenu(inventoryContents, true, 500, 700);
@@ -324,28 +333,29 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
             firstBoxNode.SetChild(secondBoxNode);
             secondBoxNode.SetChild(mainBattleMenu);
-            this.textComponents = new InteractableTextComponentTree(firstBoxNode);
-            return this.textComponents;
+            textComponents = new InteractableTextComponentTree(firstBoxNode);
+            return textComponents;
         }
 
         internal void Redraw()
         {
-            this.UpdateBackground();
-            this.UpdateForeground();
+            UpdateBackground();
+            UpdateForeground();
 
-            if (this.gameStateHandlerDelegate != null)
+            if (gameStateHandlerDelegate != null)
             {
-                this.gameStateHandlerDelegate.IGameStateHandlerNeedsRedraw(this);
+                gameStateHandlerDelegate.IGameStateHandlerNeedsRedraw(this);
             }
         }
 
         internal void UpdateBackground()
         {
-            if (this.backDrop == null) {
+            if (backDrop == null)
+            {
                 Bitmap emptyBitmap = new Bitmap(CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
                 Graphics graphics = Graphics.FromImage(emptyBitmap);
                 graphics.FillRectangle(Brushes.LightBlue, 0, 0, CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
-                this.backDrop = emptyBitmap;
+                backDrop = emptyBitmap;
             }
 
             RenderingModel backgroundRenderingModel = new()
@@ -354,10 +364,10 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 Y = 0,
                 Width = CommonConstants.GAME_DIMENSION,
                 Height = CommonConstants.GAME_DIMENSION,
-                Bitmaps = new List<Bitmap>() { this.backDrop }
+                Bitmaps = new List<Bitmap>() { backDrop }
             };
 
-            Bitmap shearedBackground = this.GetBackground();
+            Bitmap shearedBackground = GetBackground();
 
             RenderingModel shearedBackgroundRenderingModel = new()
             {
@@ -365,45 +375,45 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 Y = BattleStateConstants.BACKGROUND_Y,
                 Width = shearedBackground.Width,
                 Height = shearedBackground.Height,
-                Bitmaps = new List<Bitmap>() { this.GetBackground() }
+                Bitmaps = new List<Bitmap>() { GetBackground() }
             };
 
-            if (this.gameStateHandlerDelegate != null)
+            if (gameStateHandlerDelegate != null)
             {
-                this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, backgroundRenderingModel);
-                this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, shearedBackgroundRenderingModel);
+                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, backgroundRenderingModel);
+                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, shearedBackgroundRenderingModel);
             }
 
         }
 
         internal void UpdateForeground()
         {
-            this.UpdateGameObjects();
+            UpdateGameObjects();
 
-            switch (this.state)
+            switch (state)
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
                 case BattleState.MoveResolution:
                 case BattleState.End:
-                    this.UpdateTextComponents();
+                    UpdateTextComponents();
                     break;
                 case BattleState.EnemySelection:
-                    this.UpdateSelectedEnemy();
+                    UpdateSelectedEnemy();
                     break;
             }
         }
 
         internal void UpdateSelectedEnemy()
         {
-            Point selectedEnemyLocation = this.ComputeRenderLocationForLineUpIndex(this.selectedEnemyIndex, true);
-            double perspectiveFactor = Math.Pow(this.ComputeSqueezeFactor(selectedEnemyLocation.Y), 1.1);
-            int entityDimension = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            Point selectedEnemyLocation = ComputeRenderLocationForLineUpIndex(selectedEnemyIndex, true);
+            double perspectiveFactor = Math.Pow(ComputeSqueezeFactor(selectedEnemyLocation.Y), 1.1);
+            int entityDimension = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
 
             int selectorDimension = entityDimension + 2 * BattleStateConstants.ENEMY_SELECTOR_PADDING;
             Bitmap selectorBitmap = new Bitmap(selectorDimension, selectorDimension);
             Graphics graphics = Graphics.FromImage(selectorBitmap);
-            Pen pen = new Pen(this.enemySelectorColor);
+            Pen pen = new Pen(enemySelectorColor);
             pen.Width = 4;
             Rectangle bounds = new Rectangle(0, 0, selectorDimension, selectorDimension);
             graphics.DrawPath(pen, GraphicsPathsFactory.RoundedRect(bounds, 10));
@@ -423,46 +433,46 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 Bitmaps = new List<Bitmap>() { selectorBitmap }
             };
 
-            if (this.gameStateHandlerDelegate != null)
+            if (gameStateHandlerDelegate != null)
             {
-                this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, selectorRenderingModel);
+                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, selectorRenderingModel);
             }
         }
 
         internal void UpdateGameObjects()
         {
-            foreach (RenderingModel allyRenderingModel in this.allyRenderingModels)
+            foreach (RenderingModel allyRenderingModel in allyRenderingModels)
             {
-                if (this.gameStateHandlerDelegate != null)
+                if (gameStateHandlerDelegate != null)
                 {
-                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyRenderingModel);
+                    gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyRenderingModel);
                 }
             }
 
-            foreach (RenderingModel enemyRenderingModel in this.enemyRenderingModels)
+            foreach (RenderingModel enemyRenderingModel in enemyRenderingModels)
             {
-                if (this.gameStateHandlerDelegate != null)
+                if (gameStateHandlerDelegate != null)
                 {
-                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, enemyRenderingModel);
+                    gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, enemyRenderingModel);
                 }
             }
         }
 
         internal float GetBackgroundYForLineUpIndex(int lineUpIndex, bool isEnemy)
         {
-            int lineUpCount = isEnemy ? this.enemies.Count : this.allies.Count;
-            return (((float)lineUpIndex + 1) * BattleStateConstants.BACKGROUND_HEIGHT) / (lineUpCount + 1) + BattleStateConstants.BACKGROUND_Y;
+            int lineUpCount = isEnemy ? enemies.Count : allies.Count;
+            return ((float)lineUpIndex + 1) * BattleStateConstants.BACKGROUND_HEIGHT / (lineUpCount + 1) + BattleStateConstants.BACKGROUND_Y;
         }
 
         internal Point ComputeRenderLocationForLineUpIndex(int lineUpIndex, bool isEnemy)
         {
-            float gameObjectY = this.GetBackgroundYForLineUpIndex(lineUpIndex, isEnemy);
+            float gameObjectY = GetBackgroundYForLineUpIndex(lineUpIndex, isEnemy);
 
-            double perspectiveFactor = Math.Pow(this.ComputeSqueezeFactor(gameObjectY), 1.1);
-            int entityWidth = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-            int entityHeight = (int)((float)CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            double perspectiveFactor = Math.Pow(ComputeSqueezeFactor(gameObjectY), 1.1);
+            int entityWidth = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
+            int entityHeight = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
 
-            int gameObjectX = this.ComputeBackgroundXForPoint(new() { X = BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING, Y = gameObjectY }, isEnemy);
+            int gameObjectX = ComputeBackgroundXForPoint(new() { X = BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING, Y = gameObjectY }, isEnemy);
 
             int xOnBackground;
             bool isEvenRank = lineUpIndex % 2 == 0;
@@ -478,11 +488,11 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             }
             else if (!isEvenRank && isOnLeftSide)
             {
-                xOnBackground = gameObjectX + (BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING / 2);
+                xOnBackground = gameObjectX + BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING / 2;
             }
             else
             {
-                xOnBackground = gameObjectX - entityWidth - (BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING / 2);
+                xOnBackground = gameObjectX - entityWidth - BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING / 2;
             }
 
             return new Point() { X = xOnBackground, Y = (int)gameObjectY - entityHeight };
@@ -490,17 +500,17 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal int ComputeBackgroundXForPoint(PointF point, bool isEnemy)
         {
-            float squeezeFactor = this.ComputeSqueezeFactor(point.Y);
+            float squeezeFactor = ComputeSqueezeFactor(point.Y);
 
             float newX;
             int midX = BattleStateConstants.PERSPECTIVE.X;
             if (point.X <= midX)
             {
-                newX = midX - ((midX - point.X) * squeezeFactor);
+                newX = midX - (midX - point.X) * squeezeFactor;
             }
             else
             {
-                newX = midX + ((point.X - midX) * squeezeFactor);
+                newX = midX + (point.X - midX) * squeezeFactor;
             }
 
 
@@ -509,25 +519,25 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal float ComputeSqueezeFactor(float y)
         {
-            float normalizedY = (y - BattleStateConstants.BACKGROUND_Y + BattleStateConstants.PERSPECTIVE.Y);
-            float normalizedHeight = (BattleStateConstants.BACKGROUND_HEIGHT + BattleStateConstants.PERSPECTIVE.Y);
+            float normalizedY = y - BattleStateConstants.BACKGROUND_Y + BattleStateConstants.PERSPECTIVE.Y;
+            float normalizedHeight = BattleStateConstants.BACKGROUND_HEIGHT + BattleStateConstants.PERSPECTIVE.Y;
             return normalizedY / normalizedHeight;
         }
 
         internal void UpdateTextComponents()
         {
-            if (this.gameStateHandlerDelegate != null)
+            if (gameStateHandlerDelegate != null)
             {
-                this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetTextComponents().GetRenderingModel());
+                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, GetTextComponents().GetRenderingModel());
             }
         }
 
-        public void TransitionFromGameState(GameState state)
+        public void TransitionFromGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             // TODO: let's figure out if we need to do anything here
         }
 
-        public void TransitionToGameState(GameState state)
+        public void TransitionToGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             // TODO: let's figure out if we need to do anything here
         }
@@ -535,13 +545,13 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         //internal Bitmap GetBackground(Bitmap bitmap, Point perspective)
         internal Bitmap GetBackground()
         {
-            if (this.background != null)
+            if (background != null)
             {
-                return this.background;
+                return background;
             }
 
-            this.background = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
-            return this.background;
+            background = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
+            return background;
         }
     }
 }

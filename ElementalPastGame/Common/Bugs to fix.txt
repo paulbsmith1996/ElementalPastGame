@@ -2,5 +2,7 @@
 
 Overworld:
 1) Holding down a key that is not directional causes player to stop moving
+2) Laggy movement, most likely due to fact that it takes 20-70 ms to actually render the background
 
 Battle:
+1) Kill top enemy, escape battle, re-enter battle and dead enemy is selected (seek to first alive enemy on battle start)

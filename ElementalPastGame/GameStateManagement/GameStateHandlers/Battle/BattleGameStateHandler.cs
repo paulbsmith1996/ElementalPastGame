@@ -71,7 +71,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 throw new ArgumentException("Battle must be created with at least 1 enemy.");
             }
-            selectedEnemyIndex = 0;
+            this.selectedEnemyIndex = -1;
+            this.selectedEnemyIndex = this.SeekNextAliveEnemyIndex(true);
 
             this.allies = allies;
 

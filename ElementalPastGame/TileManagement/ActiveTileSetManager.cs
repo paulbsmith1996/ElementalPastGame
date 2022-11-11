@@ -120,6 +120,7 @@ namespace ElementalPastGame.TileManagement
 
         internal void UpdateRenderingModels(int CenterX, int CenterY, int PreviousCenterX, int PreviousCenterY, bool isAnimating, double offset)
         {
+
             for (int X = CenterX - CommonConstants.TILE_VIEW_DISTANCE - 1; X <= CenterX + CommonConstants.TILE_VIEW_DISTANCE + 1; X++) {
                 for (int Y = CenterY - CommonConstants.TILE_VIEW_DISTANCE - 1; Y <= CenterY + CommonConstants.TILE_VIEW_DISTANCE + 1; Y++)
                 {

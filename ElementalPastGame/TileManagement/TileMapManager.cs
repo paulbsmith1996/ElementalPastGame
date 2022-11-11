@@ -117,9 +117,11 @@ namespace ElementalPastGame.TileManagement
             // Bottom fence
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 820, 890, 910, 890);
             // Chunk 1a
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 880, 908, 910, 920);
+            this.SetChunkToTile(new Tile(new() { TextureMapping.Water}, true), 880, 908, 909, 919);
+            this.SetChunkToTile(new Tile(new() { TextureMapping.Dirt_Grass_7}, false), 880, 907, 909, 907);
             // Chunk 1b
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 850, 906, 870, 910);
+            this.SetChunkToTile(new Tile(new() { TextureMapping.Grass }, false), 851, 907, 869, 909);
             // Chunk 1e
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass), 850, 890, 870, 893);
             // Chunk 1c

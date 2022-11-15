@@ -23,9 +23,9 @@ using static ElementalPastGame.Items.Item;
 
 namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 {
-    public class BattleGameStateHandler : IGameStateHandler, ITextMenuObserver
+    public class BattleGameStateHandler : IGameStateHandler, IBattleTextManagerDelegate
     {
-        internal enum BattleState
+        public enum BattleState
         {
             Start,
             MoveSelection,
@@ -41,9 +41,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal Color enemySelectorColor;
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
+        internal BattleTextManager textManager;
 
         internal BattleState state;
-        internal InteractableTextComponentTree? textComponents;
         internal Inventory inventory;
 
         internal List<EntityDataModel> enemies;
@@ -67,6 +67,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         {
             state = BattleState.Start;
             this.inventory = inventory;
+            this.textManager = new BattleTextManager(inventory);
+            this.textManager.textManagerDelegate = this;
 
             this.encounterID = encounterID;
             // The battle game state handler needs to be aware of the encounterID so it can pass it back in to the 
@@ -142,7 +144,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
-                    GetTextComponents().HandleKeyPressed(keyChar);
+                    this.textManager.HandleKeyPressed(keyChar, state);
                     break;
                 case BattleState.EnemySelection:
                     switch (keyChar)
@@ -172,7 +174,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
-                    GetTextComponents().HandleKeyInputs(keyCodes);
+                    this.textManager.HandleKeysDown(keyCodes, state);
                     break;
                 case BattleState.EnemySelection:
                     UpdateEnemySelection(keyCodes);
@@ -324,18 +326,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             return true;
         }
 
-        public void MenuDidResolve(TextMenu menu, string key)
-        {
-            if (key.Contains(ESCAPE_STRING))
-            {
-                Escape();
-            }
-            else if (key.Contains(ATTACK_STRING))
-            {
-                state = BattleState.EnemySelection;
-            }
-        }
-
         internal void Escape()
         {
             if (gameStateHandlerDelegate != null)
@@ -343,40 +333,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 Dictionary<String, Object> transitionDictionary = new Dictionary<String, Object>() { { GameStateTransitionConstants.BATTLE_VICTORIOUS_KEY, false } };
                 gameStateHandlerDelegate.IGameStateHandlerNeedsGameStateUpdate(this, GameState.Overworld, transitionDictionary);
             }
-        }
-
-        internal InteractableTextComponentTree GetTextComponents()
-        {
-            if (textComponents != null)
-            {
-                return textComponents;
-            }
-
-            int textBoxHeight = 125;
-            GameTextBox firstBox = new("An enemy unit has spotted you.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
-            GameTextBox secondBox = new("Gather up and prepare to defend yourselves.", 0, CommonConstants.GAME_DIMENSION - textBoxHeight - 4, CommonConstants.GAME_DIMENSION, textBoxHeight);
-            TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(firstBox);
-            TextComponentTreeTextBoxNode secondBoxNode = new TextComponentTreeTextBoxNode(secondBox);
-
-            TextMenu mainBattleMenu = new(false, 500, 700);
-            mainBattleMenu.AddMenuObserver(this);
-
-            List<string> inventoryContents = new();
-            foreach (InventoryItemEntry entry in inventory.GetItemEntriesForType(ItemType.Consumable))
-            {
-                string itemOptionString = entry.item.displayName + "  (" + entry.count + ")";
-                inventoryContents.Add(itemOptionString);
-            }
-            TextMenu inventorySubmenu = new TextMenu(inventoryContents, true, 500, 700);
-
-            mainBattleMenu.AddTerminalOption(ATTACK_STRING);
-            mainBattleMenu.AddSubOptionWithKey(inventorySubmenu, CONSUME_STRING);
-            mainBattleMenu.AddTerminalOption(ESCAPE_STRING);
-
-            firstBoxNode.SetChild(secondBoxNode);
-            secondBoxNode.SetChild(mainBattleMenu);
-            textComponents = new InteractableTextComponentTree(firstBoxNode);
-            return textComponents;
         }
 
         internal void Redraw()
@@ -436,9 +392,13 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
+                    if (this.gameStateHandlerDelegate != null)
+                    {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.textManager.GetRenderingModel());
+                    }
+                    break;
                 case BattleState.MoveResolution:
                 case BattleState.End:
-                    UpdateTextComponents();
                     break;
                 case BattleState.EnemySelection:
                     UpdateSelectedEnemy();
@@ -513,6 +473,16 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             return false;
         }
 
+        public void BattleTextManagerWantsEscape(BattleTextManager textManager)
+        {
+            this.Escape();
+        }
+
+        public void BattleTextManagerWantsSwitchToState(BattleTextManager textManager, BattleState state)
+        {
+            this.state = state;
+        }
+
         internal float GetBackgroundYForLineUpIndex(int lineUpIndex, bool isEnemy)
         {
             int lineUpCount = isEnemy ? enemies.Count : allies.Count;
@@ -577,14 +547,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             float normalizedY = y - BattleStateConstants.BACKGROUND_Y + BattleStateConstants.PERSPECTIVE.Y;
             float normalizedHeight = BattleStateConstants.BACKGROUND_HEIGHT + BattleStateConstants.PERSPECTIVE.Y;
             return normalizedY / normalizedHeight;
-        }
-
-        internal void UpdateTextComponents()
-        {
-            if (gameStateHandlerDelegate != null)
-            {
-                gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, GetTextComponents().GetRenderingModel());
-            }
         }
 
         public void TransitionFromGameState(GameState state, Dictionary<String, Object> transitionDictionary)

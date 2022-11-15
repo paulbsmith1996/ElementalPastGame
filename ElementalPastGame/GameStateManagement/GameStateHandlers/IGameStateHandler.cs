@@ -1,4 +1,5 @@
-﻿using ElementalPastGame.Rendering;
+﻿using ElementalPastGame.KeyInput;
+using ElementalPastGame.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,12 +9,9 @@ using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
-    public interface IGameStateHandler
+    public interface IGameStateHandler : IKeyEventSubscriber
     {
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
-        public void HandleKeysDown(List<Keys> keyCodes);
-        public void HandleKeyPressed(char keyChar);
-
         public void TransitionFromGameState(GameState state, Dictionary<String, Object> transitionDictionary);
         public void TransitionToGameState(GameState state, Dictionary<String, Object> transitionDictionary);
 

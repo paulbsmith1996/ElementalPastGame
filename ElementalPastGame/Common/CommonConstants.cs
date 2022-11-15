@@ -12,7 +12,7 @@ namespace ElementalPastGame.Common
         /// <summary>
         /// The size in pixels of each tile in the overworld.
         /// </summary>
-        public static int TILE_DIMENSION = 50;
+        public static int TILE_DIMENSION = 75;
 
         // Map Constants
         /// <summary>

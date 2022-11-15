@@ -42,7 +42,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(17F, 41F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1308, 1200);
+            this.ClientSize = new System.Drawing.Size(1764, 1601);
             this.Name = "GameForm";
             this.Text = "ElementalPast";
             this.Deactivate += new System.EventHandler(this.GameForm_Deactivate);

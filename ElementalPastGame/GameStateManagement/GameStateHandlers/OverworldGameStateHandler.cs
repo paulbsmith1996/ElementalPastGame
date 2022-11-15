@@ -60,9 +60,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             this.activeEntityManager = ActiveEntityManager.GetInstance();
 
             // TODO: this is suppoed to represent the player so def move it out of here
-            Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
+            Bitmap playerBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Player], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
             List<Bitmap> blankBitmapList = new List<Bitmap>();
-            blankBitmapList.Add(BlankBitmap);
+            blankBitmapList.Add(playerBitmap);
             this.playerRenderingModel = new()
             {
                 X = (CommonConstants.TILE_VIEW_DISTANCE) * CommonConstants.TILE_DIMENSION,

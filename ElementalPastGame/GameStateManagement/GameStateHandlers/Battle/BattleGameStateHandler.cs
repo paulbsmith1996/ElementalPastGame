@@ -47,10 +47,12 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal List<EntityDataModel> enemies;
         internal List<EntityDataModel> allies;
+        internal PriorityQueue<EntityDataModel, int> entityPriorityQueue = new();
         internal List<RenderingModel> allyRenderingModels = new();
         internal List<RenderingModel> enemyRenderingModels = new();
         internal int selectedEnemyIndex;
         internal List<int> deadEnemyIndexes = new();
+        internal EntityDataModel activeEntity;
         internal long encounterID;
 
         internal Bitmap background;
@@ -66,6 +68,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             this.inventory = inventory;
 
             this.encounterID = encounterID;
+            // The battle game state handler needs to be aware of the encounterID so it can pass it back in to the 
+            // overworld state handler at the end of the battle.
             this.enemies = ActiveEntityManager.GetInstance().enemiesForEncounterID(encounterID);
             if (enemies.Count == 0)
             {
@@ -81,7 +85,21 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             lastEnemySelectionInputTime = DateTime.Now;
             timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
 
+            this.InitializeMovePriorities();
             UpdateGameObjectRenderingModels();
+        }
+
+        internal void InitializeMovePriorities()
+        {
+            foreach (EntityDataModel ally in this.allies)
+            {
+                this.entityPriorityQueue.Enqueue(ally, -ally.agility);
+            }
+
+            foreach (EntityDataModel enemy in this.enemies)
+            {
+                this.entityPriorityQueue.Enqueue(enemy, -enemy.agility);
+            }
         }
 
         internal void UpdateGameObjectRenderingModels()
@@ -101,6 +119,12 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 RenderingModel enemyRenderingModel = ComputeRenderingModel(enemy, enemyIndex, true);
                 enemyRenderingModels.Add(enemyRenderingModel);
             }
+        }
+
+        internal void UpdateActiveEntity()
+        {
+            this.activeEntity = this.entityPriorityQueue.Dequeue();
+            this.entityPriorityQueue.Enqueue(this.activeEntity, -this.activeEntity.agility);
         }
 
         internal RenderingModel ComputeRenderingModel(EntityDataModel dataModel, int lineUpIndex, bool isEnemy)

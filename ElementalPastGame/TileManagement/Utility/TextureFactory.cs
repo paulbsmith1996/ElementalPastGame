@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ElementalPastGame.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -10,14 +11,15 @@ namespace ElementalPastGame.TileManagement.Utility
     {
         public static Bitmap TessalatedTexture(Bitmap texture, int width, int height)
         {
+            Bitmap normalizedTexture = new Bitmap(texture, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
             Bitmap bitmap = new Bitmap(width, height);
             Graphics graphics = Graphics.FromImage(bitmap);
-            for(int xTileIndex = 0; xTileIndex < width; xTileIndex += texture.Width)
+            for(int xTileIndex = 0; xTileIndex < width; xTileIndex += normalizedTexture.Width)
             {
-                for (int yTileIndex = 0; yTileIndex < height; yTileIndex += texture.Height)
+                for (int yTileIndex = 0; yTileIndex < height; yTileIndex += normalizedTexture.Height)
                 {
                     // TODO: actually implement this
-                    graphics.DrawImage(texture, xTileIndex, yTileIndex);
+                    graphics.DrawImage(normalizedTexture, xTileIndex, yTileIndex);
                 }
             }
             return bitmap;

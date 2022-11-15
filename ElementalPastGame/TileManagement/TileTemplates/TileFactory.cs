@@ -17,11 +17,12 @@ namespace ElementalPastGame.TileManagement.TileTemplates
             return new Tile(imageNames, true);
         }
 
-        public static Tile TileWithBackground(String BackgroundName)
+        public static Tile TileWithBackground(String BackgroundName, bool isCollidable=false)
         {
             List<String> imageNames = new List<string>();
             imageNames.Add(BackgroundName);
-            return new Tile(imageNames, false);
+            return new Tile(imageNames, isCollidable);
         }
+
     }
 }

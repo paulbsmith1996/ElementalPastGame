@@ -31,6 +31,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             MoveSelection,
             EnemySelection,
             MoveResolution,
+            EnemyTurn,
             End,
         }
 
@@ -47,7 +48,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal List<EntityDataModel> enemies;
         internal List<EntityDataModel> allies;
-        internal PriorityQueue<EntityDataModel, int> entityPriorityQueue = new();
+        internal BattlePrioritizer battlePrioritizer;
         internal List<RenderingModel> allyRenderingModels = new();
         internal List<RenderingModel> enemyRenderingModels = new();
         internal int selectedEnemyIndex;
@@ -85,21 +86,14 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             lastEnemySelectionInputTime = DateTime.Now;
             timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
 
-            this.InitializeMovePriorities();
+            List<EntityDataModel> entities = new();
+            entities.AddRange(allies);
+            entities.AddRange(enemies);
+            this.battlePrioritizer = new BattlePrioritizer(entities);
+
+            this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
+
             UpdateGameObjectRenderingModels();
-        }
-
-        internal void InitializeMovePriorities()
-        {
-            foreach (EntityDataModel ally in this.allies)
-            {
-                this.entityPriorityQueue.Enqueue(ally, -ally.agility);
-            }
-
-            foreach (EntityDataModel enemy in this.enemies)
-            {
-                this.entityPriorityQueue.Enqueue(enemy, -enemy.agility);
-            }
         }
 
         internal void UpdateGameObjectRenderingModels()
@@ -119,12 +113,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 RenderingModel enemyRenderingModel = ComputeRenderingModel(enemy, enemyIndex, true);
                 enemyRenderingModels.Add(enemyRenderingModel);
             }
-        }
-
-        internal void UpdateActiveEntity()
-        {
-            this.activeEntity = this.entityPriorityQueue.Dequeue();
-            this.entityPriorityQueue.Enqueue(this.activeEntity, -this.activeEntity.agility);
         }
 
         internal RenderingModel ComputeRenderingModel(EntityDataModel dataModel, int lineUpIndex, bool isEnemy)
@@ -171,6 +159,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                     break;
                 case BattleState.MoveResolution:
                     break;
+                case BattleState.EnemyTurn:
+                    break;
                 case BattleState.End:
                     break;
             }
@@ -189,6 +179,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                     break;
                 case BattleState.MoveResolution:
                     ResolveAttackOnEnemies();
+                    break;
+                case BattleState.EnemyTurn:
+                    this.ResolveAttackOnAllies();
                     break;
                 case BattleState.End:
                     if (gameStateHandlerDelegate != null)
@@ -286,11 +279,35 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
             if (!BattleVictorious())
             {
-                state = BattleState.MoveSelection;
+                this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
+                if (this.IsEntityAlly(activeEntity)) {
+                    state = BattleState.MoveSelection;
+                }
+                else
+                {
+                    state = BattleState.EnemyTurn;
+                }
             }
             else
             {
                 state = BattleState.End;
+            }
+        }
+
+        internal void ResolveAttackOnAllies()
+        {
+            int randomIndex = 0;
+            EntityDataModel selectedAlly = this.allies.ElementAt(randomIndex);
+            selectedAlly.Damage(20);
+
+            this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
+            if (this.IsEntityAlly(activeEntity))
+            {
+                this.state = BattleState.MoveSelection;
+            }
+            else
+            {
+                this.state = BattleState.EnemyTurn;
             }
         }
 
@@ -375,12 +392,12 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal void UpdateBackground()
         {
-            if (backDrop == null)
+            if (this.backDrop == null)
             {
                 Bitmap emptyBitmap = new Bitmap(CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
                 Graphics graphics = Graphics.FromImage(emptyBitmap);
                 graphics.FillRectangle(Brushes.LightBlue, 0, 0, CommonConstants.GAME_DIMENSION, CommonConstants.GAME_DIMENSION);
-                backDrop = emptyBitmap;
+                this.backDrop = emptyBitmap;
             }
 
             RenderingModel backgroundRenderingModel = new()
@@ -483,6 +500,19 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             }
         }
 
+        internal bool IsEntityAlly(EntityDataModel candidate)
+        {
+            foreach (EntityDataModel dataModel in this.allies)
+            {
+                if (dataModel.Equals(candidate))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         internal float GetBackgroundYForLineUpIndex(int lineUpIndex, bool isEnemy)
         {
             int lineUpCount = isEnemy ? enemies.Count : allies.Count;
@@ -570,13 +600,13 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         //internal Bitmap GetBackground(Bitmap bitmap, Point perspective)
         internal Bitmap GetBackground()
         {
-            if (background != null)
+            if (this.background != null)
             {
-                return background;
+                return this.background;
             }
 
-            background = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
-            return background;
+            this.background = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
+            return this.background;
         }
     }
 }

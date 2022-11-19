@@ -30,13 +30,13 @@ namespace ElementalPastGame.TileManagement.Utility
             { Dirt, new Bitmap(TexturesLocation + "Dirt.jpg") },
             { Dirt_Grass_1, new Bitmap(TexturesLocation + "dirt_grass_v.jpg")},
             { Dirt_Grass_7, dirtGrassDown() },
-            { Fence, new Bitmap(TexturesLocation + "Fence.jpg") },
-            { Grass, new Bitmap(TexturesLocation + "Grass.jpg") },
+            { Fence, new Bitmap(TexturesLocation + "Fence.png") },
+            { Grass, new Bitmap(TexturesLocation + "Grass.png") },
             { Water, new Bitmap(TexturesLocation + "Water.jpg") },
 
             { Goblin, new Bitmap(TexturesLocation + "Goblin.png") },
             { Dead_Goblin, deadGoblin() },
-            { Player, new Bitmap(TexturesLocation + "Kitty.jpg") },
+            { Player, new Bitmap(TexturesLocation + "Kitty.png") },
         };
 
         public static Bitmap deadGoblin()

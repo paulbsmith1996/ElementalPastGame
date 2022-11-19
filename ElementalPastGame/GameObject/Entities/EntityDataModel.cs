@@ -9,6 +9,7 @@ namespace ElementalPastGame.GameObject.Entities
 {
     public class EntityDataModel
     {
+        public String name { get; set; }
         public int level { get; set; }
         public int health { get; set; }
         public int maxHealth { get; set; }
@@ -47,6 +48,7 @@ namespace ElementalPastGame.GameObject.Entities
 
         public void Goblin(int level)
         {
+            this.name = "Goblin";
             this.level = level;
             this.health = 100 + level * 10;
             this.maxHealth = 100 + level * 10;
@@ -60,6 +62,7 @@ namespace ElementalPastGame.GameObject.Entities
 
         public void Aendon(int level)
         {
+            this.name = "Aendon";
             this.level = level;
             this.health = 200 + level * 10;
             this.maxHealth = 200 + level * 10;
@@ -68,7 +71,7 @@ namespace ElementalPastGame.GameObject.Entities
             this.alchemyPotency = 200 + level * 10;
             this.strength = 200 + level * 10;
             this.physicalResistance = 200 + level * 10;
-            this.ImageID = TextureMapping.Goblin;
+            this.ImageID = TextureMapping.Player;
         }
 
         public void Damage(int damage)

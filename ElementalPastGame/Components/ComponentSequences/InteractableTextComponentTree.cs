@@ -13,11 +13,22 @@ namespace ElementalPastGame.Components.ComponentSequences
     {
         internal ITextComponentTree activeTree;
         internal DateTime lastInputTime;
+        internal List<IInteractableTextComponentTreeObserver> observers = new();
         
         public InteractableTextComponentTree(ITextComponentTree tree)
         {
             this.lastInputTime = DateTime.Now;
             this.activeTree = tree;
+        }
+
+        public void AddObserver(IInteractableTextComponentTreeObserver observer)
+        {
+            this.observers.Add(observer);
+        }
+
+        public void RemoveObserver(IInteractableTextComponentTreeObserver observer)
+        {
+            this.observers.Remove(observer);
         }
 
         // Use this method for selection and generally keys that need debouncing
@@ -51,6 +62,11 @@ namespace ElementalPastGame.Components.ComponentSequences
             if (this.activeTree is TextMenu)
             {
                 ((TextMenu)this.activeTree).Resolve();
+            }
+
+            foreach (IInteractableTextComponentTreeObserver observer in this.observers)
+            {
+                observer.InteractableTextComponentTreeObserverDidDismiss(this);
             }
         }
 

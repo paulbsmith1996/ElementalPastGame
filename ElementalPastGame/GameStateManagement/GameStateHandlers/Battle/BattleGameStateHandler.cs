@@ -17,13 +17,14 @@ using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.Rendering.Utility;
 using ElementalPastGame.TileManagement.Utility;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.Design.AxImporter;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 using static ElementalPastGame.Items.Item;
 
 namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 {
-    public class BattleGameStateHandler : IGameStateHandler, IBattleTextManagerDelegate
+    public class BattleGameStateHandler : IGameStateHandler, ITextMenuObserver, IInteractableTextComponentTreeObserver
     {
         public enum BattleState
         {
@@ -31,7 +32,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             MoveSelection,
             EnemySelection,
             MoveResolution,
-            EnemyTurn,
+            EnemyTurnResolution,
+            MoveResolutionInfoDisplay,
             End,
         }
 
@@ -41,7 +43,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal Color enemySelectorColor;
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
-        internal BattleTextManager textManager;
+        internal InteractableTextComponentTree? moveSelectionTextComponents;
+        internal InteractableTextComponentTree? moveResolutionTextComponents;
 
         internal BattleState state;
         internal Inventory inventory;
@@ -67,8 +70,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         {
             state = BattleState.Start;
             this.inventory = inventory;
-            this.textManager = new BattleTextManager(inventory);
-            this.textManager.textManagerDelegate = this;
 
             this.encounterID = encounterID;
             // The battle game state handler needs to be aware of the encounterID so it can pass it back in to the 
@@ -144,7 +145,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
-                    this.textManager.HandleKeyPressed(keyChar, state);
+                    this.GetMoveSelectionTextComponents().HandleKeyPressed(keyChar);
                     break;
                 case BattleState.EnemySelection:
                     switch (keyChar)
@@ -161,7 +162,10 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                     break;
                 case BattleState.MoveResolution:
                     break;
-                case BattleState.EnemyTurn:
+                case BattleState.EnemyTurnResolution:
+                    break;
+                case BattleState.MoveResolutionInfoDisplay:
+                    this.moveResolutionTextComponents.HandleKeyPressed(keyChar);
                     break;
                 case BattleState.End:
                     break;
@@ -174,16 +178,19 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 case BattleState.Start:
                 case BattleState.MoveSelection:
-                    this.textManager.HandleKeysDown(keyCodes, state);
+                    this.GetMoveSelectionTextComponents().HandleKeyInputs(keyCodes);
                     break;
                 case BattleState.EnemySelection:
                     UpdateEnemySelection(keyCodes);
                     break;
                 case BattleState.MoveResolution:
-                    ResolveAttackOnEnemies();
+                    this.DamageSelectedEnemies();
                     break;
-                case BattleState.EnemyTurn:
+                case BattleState.EnemyTurnResolution:
                     this.ResolveAttackOnAllies();
+                    break;
+                case BattleState.MoveResolutionInfoDisplay:
+                    this.moveResolutionTextComponents.HandleKeyInputs(keyCodes);
                     break;
                 case BattleState.End:
                     if (gameStateHandlerDelegate != null)
@@ -267,10 +274,11 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             return enemies.ElementAt(newSelectedEnemyIndex).isDead ? -1 : newSelectedEnemyIndex;
         }
 
-        internal void ResolveAttackOnEnemies()
+        internal int DamageSelectedEnemies()
         {
+            int damage = 20;
             EntityDataModel selectedEnemyModel = enemies.ElementAt(selectedEnemyIndex);
-            selectedEnemyModel.Damage(20);
+            selectedEnemyModel.Damage(damage);
 
             if (selectedEnemyModel.isDead)
             {
@@ -279,38 +287,26 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 UpdateGameObjectRenderingModels();
             }
 
-            if (!BattleVictorious())
-            {
-                this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
-                if (this.IsEntityAlly(activeEntity)) {
-                    state = BattleState.MoveSelection;
-                }
-                else
-                {
-                    state = BattleState.EnemyTurn;
-                }
-            }
-            else
-            {
-                state = BattleState.End;
-            }
+            this.TransitionToMoveResolutionDisplay(damage);
+
+            return damage;
         }
 
         internal void ResolveAttackOnAllies()
         {
             int randomIndex = 0;
             EntityDataModel selectedAlly = this.allies.ElementAt(randomIndex);
-            selectedAlly.Damage(20);
+            int damage = 20;
+            selectedAlly.Damage(damage);
 
+            this.TransitionToMoveResolutionDisplay(damage);
+        }
+
+        internal void TransitionToMoveResolutionDisplay(int damage)
+        {
+            this.moveResolutionTextComponents = this.GetMoveResolutionTextComponents(this.activeEntity, damage);
             this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
-            if (this.IsEntityAlly(activeEntity))
-            {
-                this.state = BattleState.MoveSelection;
-            }
-            else
-            {
-                this.state = BattleState.EnemyTurn;
-            }
+            this.state = BattleState.MoveResolutionInfoDisplay;
         }
 
         public bool BattleVictorious()
@@ -394,7 +390,13 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 case BattleState.MoveSelection:
                     if (this.gameStateHandlerDelegate != null)
                     {
-                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.textManager.GetRenderingModel());
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetMoveSelectionTextComponents().GetRenderingModel());
+                    }
+                    break;
+                case BattleState.MoveResolutionInfoDisplay:
+                    if (this.gameStateHandlerDelegate != null)
+                    {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.moveResolutionTextComponents.GetRenderingModel());
                     }
                     break;
                 case BattleState.MoveResolution:
@@ -473,14 +475,89 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             return false;
         }
 
-        public void BattleTextManagerWantsEscape(BattleTextManager textManager)
+        internal InteractableTextComponentTree GetMoveSelectionTextComponents()
         {
-            this.Escape();
+            if (moveSelectionTextComponents != null)
+            {
+                return moveSelectionTextComponents;
+            }
+
+            GameTextBox firstBox = new("An enemy unit has spotted you.", 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
+            GameTextBox secondBox = new("Gather up and prepare to defend yourselves.", 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
+            TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(firstBox);
+            TextComponentTreeTextBoxNode secondBoxNode = new TextComponentTreeTextBoxNode(secondBox);
+
+            TextMenu mainBattleMenu = new(false, 500, 700);
+            mainBattleMenu.AddMenuObserver(this);
+
+            List<string> inventoryContents = new();
+            foreach (InventoryItemEntry entry in inventory.GetItemEntriesForType(ItemType.Consumable))
+            {
+                string itemOptionString = entry.item.displayName + "  (" + entry.count + ")";
+                inventoryContents.Add(itemOptionString);
+            }
+            TextMenu inventorySubmenu = new TextMenu(inventoryContents, true, 500, 700);
+
+            mainBattleMenu.AddTerminalOption(ATTACK_STRING);
+            mainBattleMenu.AddSubOptionWithKey(inventorySubmenu, CONSUME_STRING);
+            mainBattleMenu.AddTerminalOption(ESCAPE_STRING);
+
+            firstBoxNode.SetChild(secondBoxNode);
+            secondBoxNode.SetChild(mainBattleMenu);
+            moveSelectionTextComponents = new InteractableTextComponentTree(firstBoxNode);
+            return moveSelectionTextComponents;
         }
 
-        public void BattleTextManagerWantsSwitchToState(BattleTextManager textManager, BattleState state)
+        internal InteractableTextComponentTree GetMoveResolutionTextComponents(EntityDataModel attacker, int damage)
         {
-            this.state = state;
+            String damageString = attacker.name + " dealt " + damage + " damage.";
+            GameTextBox enemyDamageInformationBox = new(damageString, 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
+            TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(enemyDamageInformationBox);
+            this.moveResolutionTextComponents = new InteractableTextComponentTree(firstBoxNode);
+            this.moveResolutionTextComponents.AddObserver(this);
+            return this.moveResolutionTextComponents;
+        }
+
+        public void MenuDidResolve(TextMenu menu, string key)
+        {
+            if (key.Contains(ESCAPE_STRING))
+            {
+                this.Escape();
+            }
+            else if (key.Contains(ATTACK_STRING))
+            {
+                this.state = BattleState.EnemySelection;
+            }
+        }
+
+        public void InteractableTextComponentTreeObserverDidDismiss(InteractableTextComponentTree tree)
+        {
+            switch(state)
+            {
+                case BattleState.MoveResolutionInfoDisplay:
+                    this.UpdateBattleStateAfterMoveResolution();
+                    break;
+            }
+        }
+
+        internal void UpdateBattleStateAfterMoveResolution()
+        {
+            if (!BattleVictorious())
+            {
+                this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
+                if (this.IsEntityAlly(activeEntity))
+                {
+                    state = BattleState.MoveSelection;
+                }
+                else
+                {
+                    state = BattleState.EnemyTurnResolution;
+                }
+            }
+            else
+            {
+                state = BattleState.End;
+            }
         }
 
         internal float GetBackgroundYForLineUpIndex(int lineUpIndex, bool isEnemy)

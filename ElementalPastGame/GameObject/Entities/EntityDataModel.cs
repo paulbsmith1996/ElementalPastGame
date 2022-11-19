@@ -62,7 +62,7 @@ namespace ElementalPastGame.GameObject.Entities
 
         public void Aendon(int level)
         {
-            this.name = "Aendon";
+            this.name = "Zuko";
             this.level = level;
             this.health = 200 + level * 10;
             this.maxHealth = 200 + level * 10;

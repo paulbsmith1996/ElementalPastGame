@@ -274,10 +274,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 int nextAliveIndex = SeekNextAliveEnemyIndex(true);
                 selectedEnemyIndex = nextAliveIndex != -1 ? nextAliveIndex : SeekNextAliveEnemyIndex(false);
-                UpdateGameObjectRenderingModels();
             }
 
-            this.TransitionToMoveResolutionDisplay(damage);
+            this.TransitionToMoveResolutionDisplay(selectedEnemyModel, damage);
 
             return damage;
         }
@@ -285,16 +284,24 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         internal void ResolveAttackOnAllies()
         {
             int randomIndex = 0;
+            while (randomIndex < this.allies.Count && this.allies.ElementAt(randomIndex).isDead)
+            {
+                randomIndex++;
+            }
             EntityDataModel selectedAlly = this.allies.ElementAt(randomIndex);
             int damage = 20;
             selectedAlly.Damage(damage);
 
-            this.TransitionToMoveResolutionDisplay(damage);
+            this.TransitionToMoveResolutionDisplay(selectedAlly, damage);
         }
 
-        internal void TransitionToMoveResolutionDisplay(int damage)
+        internal void TransitionToMoveResolutionDisplay(EntityDataModel target, int damage)
         {
-            this.moveResolutionTextComponents = this.GetMoveResolutionTextComponents(this.activeEntity, damage);
+            if (target.isDead)
+            {
+                this.UpdateGameObjectRenderingModels();
+            }
+            this.moveResolutionTextComponents = this.GetMoveResolutionTextComponents(this.activeEntity, target, damage);
             this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
             this.state = BattleState.MoveResolutionInfoDisplay;
         }
@@ -377,21 +384,27 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             switch (state)
             {
                 case BattleState.Start:
+                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
+                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetMoveSelectionTextComponents().GetRenderingModel());
+                    break;
                 case BattleState.MoveSelection:
                     if (this.gameStateHandlerDelegate != null)
                     {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
                         this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetMoveSelectionTextComponents().GetRenderingModel());
                     }
                     break;
                 case BattleState.MoveResolutionInfoDisplay:
                     if (this.gameStateHandlerDelegate != null)
                     {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
                         this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.moveResolutionTextComponents.GetRenderingModel());
                     }
                     break;
                 case BattleState.End:
                     break;
                 case BattleState.EnemySelection:
+                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
                     UpdateSelectedEnemy();
                     break;
             }
@@ -491,14 +504,30 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             return moveSelectionTextComponents;
         }
 
-        internal InteractableTextComponentTree GetMoveResolutionTextComponents(EntityDataModel attacker, int damage)
+        internal InteractableTextComponentTree GetMoveResolutionTextComponents(EntityDataModel actor, EntityDataModel recipient, int damage)
         {
-            String damageString = attacker.name + " dealt " + damage + " damage.";
+            String damageString = actor.name + " dealt " + damage + " damage to " + recipient.name;
             GameTextBox enemyDamageInformationBox = new(damageString, 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
             TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(enemyDamageInformationBox);
             this.moveResolutionTextComponents = new InteractableTextComponentTree(firstBoxNode);
             this.moveResolutionTextComponents.AddObserver(this);
             return this.moveResolutionTextComponents;
+        }
+
+        internal GameTextBox GetAllyInfoBox()
+        {
+            String allyInfoString = "";
+            for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
+            {
+                EntityDataModel allyDataModel = this.allies.ElementAt(allyIndex);
+                allyInfoString += allyDataModel.name + "  :  " + allyDataModel.health + "/" + allyDataModel.maxHealth;
+                if (allyIndex != this.allies.Count - 1)
+                {
+                    allyInfoString += "\n";
+                }
+            }
+
+            return new GameTextBox(allyInfoString, 0, 0, CommonConstants.GAME_DIMENSION, 300);
         }
 
         public void MenuDidResolve(TextMenu menu, string key)

@@ -31,8 +31,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             Start,
             MoveSelection,
             EnemySelection,
-            MoveResolution,
-            EnemyTurnResolution,
             MoveResolutionInfoDisplay,
             End,
         }
@@ -153,7 +151,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                     switch (keyChar)
                     {
                         case 's':
-                            state = BattleState.MoveResolution;
+                            this.DamageSelectedEnemies();
                             break;
                         case 'd':
                             state = BattleState.MoveSelection;
@@ -161,10 +159,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                         default:
                             return;
                     }
-                    break;
-                case BattleState.MoveResolution:
-                    break;
-                case BattleState.EnemyTurnResolution:
                     break;
                 case BattleState.MoveResolutionInfoDisplay:
                     this.moveResolutionTextComponents.HandleKeyPressed(keyChar);
@@ -184,12 +178,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                     break;
                 case BattleState.EnemySelection:
                     UpdateEnemySelection(keyCodes);
-                    break;
-                case BattleState.MoveResolution:
-                    this.DamageSelectedEnemies();
-                    break;
-                case BattleState.EnemyTurnResolution:
-                    this.ResolveAttackOnAllies();
                     break;
                 case BattleState.MoveResolutionInfoDisplay:
                     this.moveResolutionTextComponents.HandleKeyInputs(keyCodes);
@@ -401,7 +389,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                         this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.moveResolutionTextComponents.GetRenderingModel());
                     }
                     break;
-                case BattleState.MoveResolution:
                 case BattleState.End:
                     break;
                 case BattleState.EnemySelection:
@@ -547,7 +534,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 }
                 else
                 {
-                    state = BattleState.EnemyTurnResolution;
+                    this.ResolveAttackOnAllies();
                 }
             }
             else

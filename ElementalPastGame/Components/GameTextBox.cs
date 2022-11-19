@@ -21,6 +21,7 @@ namespace ElementalPastGame.Components
         public int cornerRadius { get; set; }
         public Color borderColor { get; set; }
         public Color backgroundColor { get; set; }
+        public Font font { get; set; }
 
         public String text;
 
@@ -28,11 +29,15 @@ namespace ElementalPastGame.Components
 
         internal RenderingModel? renderingModel { get; set; }
 
-        public GameTextBox (String text, int x, int y, int width, int height) : this(text, x, y, width, height, TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, TextComponentConstants.DEFAULT_BACKGROUND_COLOR)
+        public GameTextBox (String text, int x, int y, int width, int height) : this(text, TextComponentConstants.FONT_FAMILY, TextComponentConstants.FONT_SIZE, x, y, width, height, TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, TextComponentConstants.DEFAULT_BACKGROUND_COLOR)
         {
         }
 
-        public GameTextBox(String text, int x, int y, int width, int height, int cornerRadius, Color borderColor, Color backgroundColor)
+        public GameTextBox(String text, String fontFamily, int fontSize, int x, int y, int width, int height) : this(text, fontFamily, fontSize, x, y, width, height, TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, TextComponentConstants.DEFAULT_BACKGROUND_COLOR)
+        {
+        }
+
+        public GameTextBox(String text, String fontFamily, int fontSize, int x, int y, int width, int height, int cornerRadius, Color borderColor, Color backgroundColor)
         {
             this.text = text;
             this.x = x;
@@ -42,6 +47,7 @@ namespace ElementalPastGame.Components
             this.cornerRadius = cornerRadius;
             this.borderColor = borderColor;
             this.backgroundColor = backgroundColor;
+            this.font = new Font(fontFamily, fontSize);
         }
 
         public RenderingModel getRenderingModel()
@@ -68,7 +74,7 @@ namespace ElementalPastGame.Components
             Rectangle innerBorderBounds = new Rectangle(TextComponentConstants.INNER_RECT_OFFSET, TextComponentConstants.INNER_RECT_OFFSET, this.width - 2 * TextComponentConstants.INNER_RECT_OFFSET, this.height - 2 * TextComponentConstants.INNER_RECT_OFFSET);
             g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(innerBorderBounds, this.cornerRadius));
 
-            g.DrawString(this.text, TextComponentConstants.FONT, Brushes.White, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET);
+            g.DrawString(this.text, this.font, Brushes.White, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET);
 
             List<Bitmap> bitmaps = new()
             {

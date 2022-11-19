@@ -527,7 +527,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 }
             }
 
-            return new GameTextBox(allyInfoString, 0, 0, CommonConstants.GAME_DIMENSION, 300);
+            return new GameTextBox(allyInfoString, "Luminari", 15, 0, 0, CommonConstants.GAME_DIMENSION, 300);
         }
 
         public void MenuDidResolve(TextMenu menu, string key)

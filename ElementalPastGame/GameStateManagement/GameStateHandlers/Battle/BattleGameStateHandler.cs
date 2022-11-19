@@ -43,6 +43,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal Color enemySelectorColor;
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
+        internal BattleStateUtilities battleStateUtilities { get; set; }
         internal InteractableTextComponentTree? moveSelectionTextComponents;
         internal InteractableTextComponentTree? moveResolutionTextComponents;
 
@@ -79,6 +80,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 throw new ArgumentException("Battle must be created with at least 1 enemy.");
             }
+            this.battleStateUtilities = new BattleStateUtilities(allies, enemies);
             this.selectedEnemyIndex = -1;
             this.selectedEnemyIndex = this.SeekNextAliveEnemyIndex(true);
 
@@ -120,9 +122,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal RenderingModel ComputeRenderingModel(EntityDataModel dataModel, int lineUpIndex, bool isEnemy)
         {
-            Point entityLocation = ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
+            Point entityLocation = this.battleStateUtilities.ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
 
-            double perspectiveFactor = Math.Pow(ComputeSqueezeFactor(entityLocation.Y), 1.1);
+            double perspectiveFactor = Math.Pow(this.battleStateUtilities.ComputeSqueezeFactor(entityLocation.Y), 1.1);
             int entityWidth = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
             int entityHeight = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
 
@@ -361,7 +363,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 Bitmaps = new List<Bitmap>() { backDrop }
             };
 
-            Bitmap shearedBackground = GetBackground();
+            Bitmap shearedBackground = this.battleStateUtilities.GetBackground();
 
             RenderingModel shearedBackgroundRenderingModel = new()
             {
@@ -369,7 +371,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 Y = BattleStateConstants.BACKGROUND_Y,
                 Width = shearedBackground.Width,
                 Height = shearedBackground.Height,
-                Bitmaps = new List<Bitmap>() { GetBackground() }
+                Bitmaps = new List<Bitmap>() { this.battleStateUtilities.GetBackground() }
             };
 
             if (gameStateHandlerDelegate != null)
@@ -410,8 +412,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal void UpdateSelectedEnemy()
         {
-            Point selectedEnemyLocation = ComputeRenderLocationForLineUpIndex(selectedEnemyIndex, true);
-            double perspectiveFactor = Math.Pow(ComputeSqueezeFactor(selectedEnemyLocation.Y), 1.1);
+            Point selectedEnemyLocation = this.battleStateUtilities.ComputeRenderLocationForLineUpIndex(selectedEnemyIndex, true);
+            double perspectiveFactor = Math.Pow(this.battleStateUtilities.ComputeSqueezeFactor(selectedEnemyLocation.Y), 1.1);
             int entityDimension = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
 
             int selectorDimension = entityDimension + 2 * BattleStateConstants.ENEMY_SELECTOR_PADDING;
@@ -421,12 +423,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             pen.Width = 4;
             Rectangle bounds = new Rectangle(0, 0, selectorDimension, selectorDimension);
             graphics.DrawPath(pen, GraphicsPathsFactory.RoundedRect(bounds, 10));
-
-            //if (this.enemySelector != null)
-            //{
-            //    this.enemySelector.Dispose();
-            //}
-            //this.enemySelector = selectorBitmap;
 
             RenderingModel selectorRenderingModel = new()
             {
@@ -560,72 +556,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             }
         }
 
-        internal float GetBackgroundYForLineUpIndex(int lineUpIndex, bool isEnemy)
-        {
-            int lineUpCount = isEnemy ? enemies.Count : allies.Count;
-            return ((float)lineUpIndex + 1) * BattleStateConstants.BACKGROUND_HEIGHT / (lineUpCount + 1) + BattleStateConstants.BACKGROUND_Y;
-        }
-
-        internal Point ComputeRenderLocationForLineUpIndex(int lineUpIndex, bool isEnemy)
-        {
-            float gameObjectY = GetBackgroundYForLineUpIndex(lineUpIndex, isEnemy);
-
-            double perspectiveFactor = Math.Pow(ComputeSqueezeFactor(gameObjectY), 1.1);
-            int entityWidth = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-            int entityHeight = (int)(CommonConstants.BATTLE_PARTICIPANT_DIMENSION * perspectiveFactor);
-
-            int gameObjectX = ComputeBackgroundXForPoint(new() { X = BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING, Y = gameObjectY }, isEnemy);
-
-            int xOnBackground;
-            bool isEvenRank = lineUpIndex % 2 == 0;
-            bool isOnLeftSide = gameObjectX < BattleStateConstants.PERSPECTIVE.X;
-
-            if (isEvenRank && isOnLeftSide)
-            {
-                xOnBackground = gameObjectX;
-            }
-            else if (isEvenRank && !isOnLeftSide)
-            {
-                xOnBackground = gameObjectX - entityWidth;
-            }
-            else if (!isEvenRank && isOnLeftSide)
-            {
-                xOnBackground = gameObjectX + BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING / 2;
-            }
-            else
-            {
-                xOnBackground = gameObjectX - entityWidth - BattleStateConstants.GAME_OBJECT_HORIZONTAL_PADDING / 2;
-            }
-
-            return new Point() { X = xOnBackground, Y = (int)gameObjectY - entityHeight };
-        }
-
-        internal int ComputeBackgroundXForPoint(PointF point, bool isEnemy)
-        {
-            float squeezeFactor = ComputeSqueezeFactor(point.Y);
-
-            float newX;
-            int midX = BattleStateConstants.PERSPECTIVE.X;
-            if (point.X <= midX)
-            {
-                newX = midX - (midX - point.X) * squeezeFactor;
-            }
-            else
-            {
-                newX = midX + (point.X - midX) * squeezeFactor;
-            }
-
-
-            return isEnemy ? CommonConstants.GAME_DIMENSION - (int)newX : (int)newX;
-        }
-
-        internal float ComputeSqueezeFactor(float y)
-        {
-            float normalizedY = y - BattleStateConstants.BACKGROUND_Y + BattleStateConstants.PERSPECTIVE.Y;
-            float normalizedHeight = BattleStateConstants.BACKGROUND_HEIGHT + BattleStateConstants.PERSPECTIVE.Y;
-            return normalizedY / normalizedHeight;
-        }
-
         public void TransitionFromGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             // TODO: let's figure out if we need to do anything here
@@ -634,18 +564,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         public void TransitionToGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             // TODO: let's figure out if we need to do anything here
-        }
-
-        //internal Bitmap GetBackground(Bitmap bitmap, Point perspective)
-        internal Bitmap GetBackground()
-        {
-            if (this.background != null)
-            {
-                return this.background;
-            }
-
-            this.background = TextureFactory.TessalatedTexture(TextureMapping.Mapping[TextureMapping.Dirt], BattleStateConstants.BACKGROUND_WIDTH, BattleStateConstants.BACKGROUND_HEIGHT, BattleStateConstants.PERSPECTIVE);
-            return this.background;
         }
     }
 }

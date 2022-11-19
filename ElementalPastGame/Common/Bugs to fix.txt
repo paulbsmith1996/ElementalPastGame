@@ -5,4 +5,5 @@ Overworld:
 2) Laggy movement, most likely due to fact that it takes 20-70 ms to actually render the background
 
 Battle:
-1) Kill top enemy, escape battle, re-enter battle and dead enemy is selected (seek to first alive enemy on battle start)
+1) Kill top enemy, escape battle, re-enter battle and dead enemy is selected (seek to first alive enemy on battle start) FIXED
+2) When the move resolution info display pops up for the enemy, it is occasionally "laggy" and doesn't get the first few key taps for some reason

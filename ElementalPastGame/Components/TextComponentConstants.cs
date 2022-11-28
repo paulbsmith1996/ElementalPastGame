@@ -24,6 +24,11 @@ namespace ElementalPastGame.Components
         public static int MENU_SELECT_ICON_TEXT_PADDING = 3;
         public static Color MENU_SELECT_ICON_COLOR = Color.White;
 
+        public static double TEXTBOX_POINTER_ANIMATION_DURATION = 1000;
+        public static int TEXTBOX_POINTER_ANIMATION_DISTANCE = 15;
+        public static int TEXTBOX_POINTER_WIDTH = 20;
+        public static int TEXTBOX_POINTER_HEIGHT = 15;
+
         public static String FONT_FAMILY = "Arial Narrow";
         public static Font FONT = new Font(FONT_FAMILY, FONT_SIZE);
         public static Color DEFAULT_BORDER_COLOR = Color.FromArgb(255, 70, 120, 150);

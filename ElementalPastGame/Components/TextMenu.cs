@@ -174,11 +174,11 @@ namespace ElementalPastGame.Components
             }
         }
 
-        public RenderingModel getRenderingModel()
+        public List<RenderingModel> getRenderingModels()
         {
             if (this.renderingModel != null && !this.needsRenderingModelUpdate)
             {
-                return (RenderingModel)this.renderingModel;
+                return new List<RenderingModel>() { (RenderingModel)this.renderingModel };
             }
             this.needsRenderingModelUpdate = false;
 
@@ -250,7 +250,7 @@ namespace ElementalPastGame.Components
                 Height = this.height,
                 Bitmaps = bitmaps,
             };
-            return (RenderingModel)this.renderingModel;
+            return new List<RenderingModel>() { (RenderingModel)this.renderingModel };
         }
 
         internal String GetAncestorPath()

@@ -1,7 +1,9 @@
 ﻿using ElementalPastGame.TileManagement.Utility;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -48,11 +50,64 @@ namespace ElementalPastGame.TileManagement.TileTemplates
             return new Tile(imageNames, true);
         }
 
+        public static Tile[] BushyTreeWithBackground(String backgroundName)
+        {
+
+            Tile topLeft = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeTL}, true);
+            Tile topRight = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeTR }, true);
+            Tile bottomLeft = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeBL }, true);
+            Tile bottomRight = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeBR }, true);
+
+            return new Tile[] { topLeft, topRight, bottomLeft, bottomRight };
+        }
+
         public static Tile TileWithBackground(String BackgroundName, bool isCollidable=false)
         {
             List<String> imageNames = new List<string>();
             imageNames.Add(BackgroundName);
             return new Tile(imageNames, isCollidable);
+        }
+
+        public static Tile[] TilesForImage(String foregroundImageName, String backgroundImageName, int width, int height, bool isCollidable)
+        {
+            WriteSubImagesIfNeeded(foregroundImageName, width, height);
+
+            Tile[] tiles = new Tile[width * height];
+            for (int xIndex = 0; xIndex < width; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < height; yIndex++)
+                {
+                    List<String> imageNames = new();
+                    imageNames.Add(backgroundImageName);
+                    imageNames.Add(foregroundImageName + "_" + xIndex + "_" + yIndex);
+                    Tile currentTile = new Tile(imageNames, isCollidable);
+                    tiles[yIndex * width + xIndex] = currentTile;
+                }
+            }
+
+            return tiles;
+        }
+
+        internal static void WriteSubImagesIfNeeded(String imageName, int widthInTiles, int heightInTiles)
+        {
+            Bitmap imageBitmap = TextureMapping.Mapping[imageName];
+            if (TextureMapping.Mapping.GetValueOrDefault(imageName + "_0_0") != null)
+            {
+                return;
+            }
+
+            int subimageBitmapWidth = imageBitmap.Width / widthInTiles;
+            int subimageBitmapHeight = imageBitmap.Height / heightInTiles;
+
+            for (int xIndex = 0; xIndex < widthInTiles; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < heightInTiles; yIndex++)
+                {
+                    Rectangle cloneRectangle = new Rectangle(xIndex * subimageBitmapWidth, yIndex * subimageBitmapHeight, subimageBitmapWidth, subimageBitmapHeight);
+                    Bitmap cloneBitmap = imageBitmap.Clone(cloneRectangle, imageBitmap.PixelFormat);
+                    TextureMapping.Mapping.Add(imageName + "_" + xIndex + "_" + yIndex, cloneBitmap);
+                }
+            }
         }
 
     }

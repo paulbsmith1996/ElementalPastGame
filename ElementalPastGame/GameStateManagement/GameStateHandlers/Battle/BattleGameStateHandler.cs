@@ -384,27 +384,48 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             switch (state)
             {
                 case BattleState.Start:
-                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
-                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetMoveSelectionTextComponents().GetRenderingModel());
+                    foreach (RenderingModel allyInfoBoxRenderingModels in this.GetAllyInfoBox().getRenderingModels())
+                    {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyInfoBoxRenderingModels);
+                    }
+                    foreach (RenderingModel moveSelectionRenderingModel in this.GetMoveSelectionTextComponents().GetRenderingModels())
+                    {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, moveSelectionRenderingModel);
+                    }
                     break;
                 case BattleState.MoveSelection:
                     if (this.gameStateHandlerDelegate != null)
                     {
-                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
-                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetMoveSelectionTextComponents().GetRenderingModel());
+                        foreach (RenderingModel allyInfoBoxRenderingModels in this.GetAllyInfoBox().getRenderingModels())
+                        {
+                            this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyInfoBoxRenderingModels);
+                        }
+                        foreach (RenderingModel moveSelectionRenderingModel in this.GetMoveSelectionTextComponents().GetRenderingModels())
+                        {
+                            this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, moveSelectionRenderingModel);
+                        }
                     }
                     break;
                 case BattleState.MoveResolutionInfoDisplay:
                     if (this.gameStateHandlerDelegate != null)
                     {
-                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
-                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.moveResolutionTextComponents.GetRenderingModel());
+                        foreach (RenderingModel allyInfoBoxRenderingModels in this.GetAllyInfoBox().getRenderingModels())
+                        {
+                            this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyInfoBoxRenderingModels);
+                        }
+                        foreach (RenderingModel moveResolutionRenderingModel in this.moveResolutionTextComponents.GetRenderingModels())
+                        {
+                            this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, moveResolutionRenderingModel);
+                        }
                     }
                     break;
                 case BattleState.End:
                     break;
                 case BattleState.EnemySelection:
-                    this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, this.GetAllyInfoBox().getRenderingModel());
+                    foreach (RenderingModel allyInfoBoxRenderingModels in this.GetAllyInfoBox().getRenderingModels())
+                    {
+                        this.gameStateHandlerDelegate.IGameStateHandlerNeedsBitmapUpdateForRenderingModel(this, allyInfoBoxRenderingModels);
+                    }
                     UpdateSelectedEnemy();
                     break;
             }
@@ -527,7 +548,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 }
             }
 
-            return new GameTextBox(allyInfoString, "Luminari", 15, 0, 0, CommonConstants.GAME_DIMENSION, 300);
+            return new GameTextBox(allyInfoString, "Luminari", 15, 0, 0, CommonConstants.GAME_DIMENSION, 300, false);
         }
 
         public void MenuDidResolve(TextMenu menu, string key)

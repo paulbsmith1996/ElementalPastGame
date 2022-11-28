@@ -106,6 +106,26 @@ namespace ElementalPastGame.TileManagement
             }
         }
 
+        //internal void SetBushyTree(String backgroundName, int x, int y)
+        //{
+        //    Tile[] bushyTreeTiles = TileFactory.BushyTreeWithBackground(backgroundName);
+        //    this.SetTileAtLocation(bushyTreeTiles[0], x + 1, y + 1);
+        //    this.SetTileAtLocation(bushyTreeTiles[1], x, y + 1);
+        //    this.SetTileAtLocation(bushyTreeTiles[2], x + 1, y);
+        //    this.SetTileAtLocation(bushyTreeTiles[3], x , y);
+        //}
+
+        internal void SetImageOnTiles(String foregroundImageName, String backgroundImageName, int x, int y, int width, int height, bool isCollidable)
+        {
+            Tile[] tiles = TileFactory.TilesForImage(foregroundImageName, backgroundImageName, width, height, isCollidable);
+            for (int xIndex = 0; xIndex < width; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < height; yIndex++)
+                {
+                    this.SetTileAtLocation(tiles[yIndex * width + xIndex], x + (width - xIndex - 1), y + (height - yIndex - 1));
+                }
+            }
+        }
 
         // Map setups
 
@@ -138,6 +158,8 @@ namespace ElementalPastGame.TileManagement
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 870, 891, 870, 892);
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.CornerBL), 870, 890);
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.CornerTL), 870, 893);
+            this.SetImageOnTiles(TextureMapping.BushyTree, TextureMapping.Grass, 860, 894, 2, 2, true);
+
             // Chunk 1c
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Grass), 850, 891, 853, 909);
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 850, 891, 850, 909);

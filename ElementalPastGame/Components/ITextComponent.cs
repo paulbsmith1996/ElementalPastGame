@@ -17,6 +17,6 @@ namespace ElementalPastGame.Components
 
         public Color backgroundColor { get; }
 
-        public RenderingModel getRenderingModel();
+        public List<RenderingModel> getRenderingModels();
     }
 }

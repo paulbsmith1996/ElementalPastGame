@@ -2,6 +2,7 @@
 using ElementalPastGame.Rendering.Utility;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Text;
@@ -25,19 +26,63 @@ namespace ElementalPastGame.Components
 
         public String text;
 
+        internal bool hasPointer;
+        internal Bitmap pointerBitmap;
+
+        internal DateTime animationStartTime;
+        internal int pointerAnimationX;
+        internal int pointerAnimationStartY;
+
         public ITextComponent? childTextComponent { get; set; }
 
-        internal RenderingModel? renderingModel { get; set; }
+        internal RenderingModel? staticRenderingModel { get; set; }
 
-        public GameTextBox (String text, int x, int y, int width, int height) : this(text, TextComponentConstants.FONT_FAMILY, TextComponentConstants.FONT_SIZE, x, y, width, height, TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, TextComponentConstants.DEFAULT_BACKGROUND_COLOR)
+        public GameTextBox(String text,
+                            int x,
+                            int y,
+                            int width,
+                            int height) : this(text, TextComponentConstants.FONT_FAMILY, TextComponentConstants.FONT_SIZE,
+                                               x, y, width, height, TextComponentConstants.CORNER_RADIUS,
+                                               TextComponentConstants.DEFAULT_BORDER_COLOR,
+                                               TextComponentConstants.DEFAULT_BACKGROUND_COLOR, true)
         {
         }
 
-        public GameTextBox(String text, String fontFamily, int fontSize, int x, int y, int width, int height) : this(text, fontFamily, fontSize, x, y, width, height, TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, TextComponentConstants.DEFAULT_BACKGROUND_COLOR)
+        public GameTextBox (String text, 
+                            int x, 
+                            int y, 
+                            int width, 
+                            int height, bool hasPointer) : this(text, TextComponentConstants.FONT_FAMILY, TextComponentConstants.FONT_SIZE, 
+                                               x, y, width, height, TextComponentConstants.CORNER_RADIUS, 
+                                               TextComponentConstants.DEFAULT_BORDER_COLOR, 
+                                               TextComponentConstants.DEFAULT_BACKGROUND_COLOR, hasPointer)
         {
         }
 
-        public GameTextBox(String text, String fontFamily, int fontSize, int x, int y, int width, int height, int cornerRadius, Color borderColor, Color backgroundColor)
+        public GameTextBox(String text, 
+                           String fontFamily, 
+                           int fontSize, 
+                           int x, 
+                           int y, 
+                           int width, 
+                           int height,
+                           bool hasPointer) : this(text, fontFamily, fontSize, x, y, width, height, 
+                                              TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR, 
+                                              TextComponentConstants.DEFAULT_BACKGROUND_COLOR, hasPointer)
+        {
+        }
+
+        public GameTextBox(String text, 
+                           String fontFamily, 
+                           int fontSize, 
+                           int x, 
+                           int y, 
+                           int width, 
+                           int height, 
+                           int cornerRadius, 
+                           Color borderColor, 
+                           Color backgroundColor,
+                           bool hasPointer)
         {
             this.text = text;
             this.x = x;
@@ -48,13 +93,30 @@ namespace ElementalPastGame.Components
             this.borderColor = borderColor;
             this.backgroundColor = backgroundColor;
             this.font = new Font(fontFamily, fontSize);
+            this.hasPointer = hasPointer;
+
+            this.pointerAnimationX = this.x + this.width - TextComponentConstants.TEXT_INSET - TextComponentConstants.TEXTBOX_POINTER_WIDTH;
+            int pointerAnimationEndY = this.y + this.height - TextComponentConstants.TEXT_INSET - TextComponentConstants.TEXTBOX_POINTER_HEIGHT;
+            this.pointerAnimationStartY = pointerAnimationEndY - TextComponentConstants.TEXTBOX_POINTER_ANIMATION_DISTANCE;
+            this.pointerBitmap = this.GetPointerBitmap();
+            this.animationStartTime = DateTime.Now;
         }
 
-        public RenderingModel getRenderingModel()
+        public List<RenderingModel> getRenderingModels()
         {
-            if (this.renderingModel != null)
+            List<RenderingModel> renderingModels = new List<RenderingModel>() { this.GetStaticRenderingModel() };
+            if (this.hasPointer)
             {
-                return (RenderingModel)this.renderingModel;
+                renderingModels.Add(this.GetPointerRenderingModel());
+            }
+            return renderingModels;
+        }
+
+        internal RenderingModel GetStaticRenderingModel()
+        {
+            if (this.staticRenderingModel != null)
+            {
+                return (RenderingModel)this.staticRenderingModel;
             }
 
             Bitmap bitmap = new Bitmap(this.width, this.height);
@@ -81,7 +143,7 @@ namespace ElementalPastGame.Components
                 bitmap
             };
 
-            this.renderingModel = new ()
+            this.staticRenderingModel = new()
             {
                 X = this.x,
                 Y = this.y,
@@ -90,7 +152,42 @@ namespace ElementalPastGame.Components
                 Bitmaps = bitmaps,
             };
 
-            return (RenderingModel)this.renderingModel;
+            return (RenderingModel)this.staticRenderingModel;
+        }
+
+        internal RenderingModel GetPointerRenderingModel()
+        {
+            DateTime now = DateTime.Now;
+            double timeSinceAnimationStart = (now - this.animationStartTime).TotalMilliseconds;
+            if (timeSinceAnimationStart > TextComponentConstants.TEXTBOX_POINTER_ANIMATION_DURATION)
+            {
+                this.animationStartTime = now;
+                timeSinceAnimationStart = 0;
+            }
+            double fractionAnimationCompleted = timeSinceAnimationStart / TextComponentConstants.TEXTBOX_POINTER_ANIMATION_DURATION;
+            int pointerAnimationY = (int)(fractionAnimationCompleted * TextComponentConstants.TEXTBOX_POINTER_ANIMATION_DISTANCE);
+            int pointerY = pointerAnimationY + this.pointerAnimationStartY;
+
+            return new RenderingModel()
+            {
+                X = this.pointerAnimationX,
+                Y = pointerY,
+                Width = this.pointerBitmap.Width,
+                Height = this.pointerBitmap.Height,
+                Bitmaps = new List<Bitmap>() { this.pointerBitmap }
+            };
+        }
+
+        internal Bitmap GetPointerBitmap()
+        {
+            Bitmap pointerBitmap = new Bitmap(TextComponentConstants.TEXTBOX_POINTER_WIDTH, TextComponentConstants.TEXTBOX_POINTER_HEIGHT);
+            Graphics pointerGraphics = Graphics.FromImage(pointerBitmap);
+            Brush pointerBrush = Brushes.White;
+            Point[] points = { new Point(0, 0), 
+                               new Point(TextComponentConstants.TEXTBOX_POINTER_WIDTH, 0), 
+                               new Point(TextComponentConstants.TEXTBOX_POINTER_WIDTH / 2, TextComponentConstants.TEXTBOX_POINTER_HEIGHT) };
+            pointerGraphics.FillPolygon(pointerBrush, points);
+            return pointerBitmap;
         }
     }
 }

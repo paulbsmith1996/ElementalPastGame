@@ -126,9 +126,9 @@ namespace ElementalPastGame.Components.ComponentSequences
             }
         }
 
-        public RenderingModel GetRenderingModel()
+        public List<RenderingModel> GetRenderingModels()
         {
-            return this.activeTree.textComponent.getRenderingModel();
+            return this.activeTree.textComponent.getRenderingModels();
         }
     }
 }

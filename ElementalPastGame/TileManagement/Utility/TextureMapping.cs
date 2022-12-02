@@ -24,11 +24,8 @@ namespace ElementalPastGame.TileManagement.Utility
         public static String FenceCornerBL = "Fence_Corner_BL";
         public static String FenceCornerBR = "Fence_Corner_BR";
 
-        public static String BushyTreeTL = "Bushy_Tree_TL";
-        public static String BushyTreeTR = "Bushy_Tree_TR";
-        public static String BushyTreeBL = "Bushy_Tree_BL";
-        public static String BushyTreeBR = "Bushy_Tree_BR";
         public static String BushyTree = "Bushy_Tree";
+        public static String PineTree = "Pine_Tree";
 
         public static String Water = "Water";
         public static String Dirt_Grass_1 = "Dirt_Grass_1";
@@ -51,11 +48,8 @@ namespace ElementalPastGame.TileManagement.Utility
             { FenceCornerBL, new Bitmap(TexturesLocation + "fence_corner_bl.png") },
             { FenceCornerBR, fenceCornerBR() },
 
-            { BushyTreeTL, new Bitmap(TexturesLocation + "bushytreetl.png") },
-            { BushyTreeTR, new Bitmap(TexturesLocation + "bushytreetr.png") },
-            { BushyTreeBL, new Bitmap(TexturesLocation + "bushytreell.png") },
-            { BushyTreeBR, new Bitmap(TexturesLocation + "bushytreelr.png") },
-            { BushyTree, new Bitmap(TexturesLocation + "fence_horizontal.png") },
+            { BushyTree, new Bitmap(TexturesLocation + "bushytree.png") },
+            { PineTree, new Bitmap(TexturesLocation + "pinetree.png") },
 
             { Grass, new Bitmap(TexturesLocation + "Grass.png") },
             { Water, new Bitmap(TexturesLocation + "Water.jpg") },

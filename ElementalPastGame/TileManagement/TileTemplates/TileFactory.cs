@@ -50,17 +50,6 @@ namespace ElementalPastGame.TileManagement.TileTemplates
             return new Tile(imageNames, true);
         }
 
-        public static Tile[] BushyTreeWithBackground(String backgroundName)
-        {
-
-            Tile topLeft = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeTL}, true);
-            Tile topRight = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeTR }, true);
-            Tile bottomLeft = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeBL }, true);
-            Tile bottomRight = new Tile(new List<String>() { backgroundName, TextureMapping.BushyTreeBR }, true);
-
-            return new Tile[] { topLeft, topRight, bottomLeft, bottomRight };
-        }
-
         public static Tile TileWithBackground(String BackgroundName, bool isCollidable=false)
         {
             List<String> imageNames = new List<string>();

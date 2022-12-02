@@ -32,7 +32,9 @@ namespace ElementalPastGame.GameObject
         public EntityDataModel dataModel { get; set; }
 
         internal int currentMoveIndex = 0;
-        internal int runloopsSinceLastAggressiveMove = 0;
+        internal int runloopsSinceLastRandomOrAggressiveMove = 0;
+
+        internal Random rng = new Random();
 
         public GameObjectModel(EntityType type, int level, int X, int Y, MovementType movementType = MovementType.Wander)
         {
@@ -123,6 +125,7 @@ namespace ElementalPastGame.GameObject
                     this.MoveTowardsCenter();
                     break;
                 case MovementType.Wander:
+                    this.MakeRandomMove();
                     break;
             }
         }
@@ -164,16 +167,16 @@ namespace ElementalPastGame.GameObject
 
         internal void MoveTowardsCenter()
         {
-            if (this.runloopsSinceLastAggressiveMove > 0)
+            if (this.runloopsSinceLastRandomOrAggressiveMove > 0)
             {
-                if (this.runloopsSinceLastAggressiveMove < GameObjectConstants.AGGRESSIVE_MOVEMENT_LEEWAY_CYCLES)
+                if (this.runloopsSinceLastRandomOrAggressiveMove < GameObjectConstants.AGGRESSIVE_MOVEMENT_LEEWAY_CYCLES)
                 {
-                    this.runloopsSinceLastAggressiveMove++;
+                    this.runloopsSinceLastRandomOrAggressiveMove++;
                     return;
                 }
                 else
                 {
-                    this.runloopsSinceLastAggressiveMove = 0;
+                    this.runloopsSinceLastRandomOrAggressiveMove = 0;
                 }
             }
 
@@ -208,7 +211,47 @@ namespace ElementalPastGame.GameObject
             }
 
             this.MoveTo(newX, newY, true);
-            this.runloopsSinceLastAggressiveMove++;
+            this.runloopsSinceLastRandomOrAggressiveMove++;
+        }
+
+        internal void MakeRandomMove()
+        {
+            if (this.runloopsSinceLastRandomOrAggressiveMove > 0)
+            {
+                if (this.runloopsSinceLastRandomOrAggressiveMove < GameObjectConstants.AGGRESSIVE_MOVEMENT_LEEWAY_CYCLES)
+                {
+                    this.runloopsSinceLastRandomOrAggressiveMove++;
+                    return;
+                }
+                else
+                {
+                    this.runloopsSinceLastRandomOrAggressiveMove = 0;
+                }
+            }
+
+            // Give this guy a good chance of sitting still for a while
+            int randomMove = rng.Next(7);
+            int newX = this.Location.X;
+            int newY = this.Location.Y;
+            if (randomMove == 0)
+            {
+                newX--;
+            }
+            else if (randomMove == 1)
+            {
+                newX++;
+            }
+            else if (randomMove == 2)
+            {
+                newY--;
+            }
+            else if (randomMove == 3)
+            {
+                newY++;
+            }
+
+            this.MoveTo(newX, newY, true);
+            this.runloopsSinceLastRandomOrAggressiveMove++;
         }
     }
 }

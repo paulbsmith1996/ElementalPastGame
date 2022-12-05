@@ -18,7 +18,7 @@ namespace ElementalPastGame.GameObject.Entities
         };
         public String name { get; set; }
         public int level { get; set; }
-        public DefenseType type { get; set; }
+        public DefenseType defenseType { get; set; }
         public int health { get; set; }
         public int maxHealth { get; set; }
         public int agility { get; set; }

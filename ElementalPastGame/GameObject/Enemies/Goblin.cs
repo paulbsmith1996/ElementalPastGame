@@ -11,7 +11,7 @@ namespace ElementalPastGame.GameObject.Enemies
 {
     public class Goblin : GameObjectModel, IGameObjectModel
     {
-        public Goblin(int X, int Y, int level) : base(EntityType.Goblin, level, X, Y)
+        public Goblin(int X, int Y) : base(EntityType.Goblin, X, Y)
         {
         }
     }

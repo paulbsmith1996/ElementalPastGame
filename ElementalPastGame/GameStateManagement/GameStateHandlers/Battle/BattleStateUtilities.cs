@@ -13,12 +13,12 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
     public class BattleStateUtilities
     {
 
-        internal List<EntityDataModel> allies { get; set; }
-        internal List<EntityDataModel> enemies { get; set; }
+        internal List<EntityBattleData> allies { get; set; }
+        internal List<EntityBattleData> enemies { get; set; }
         internal Bitmap? background;
         Random rng = Random.Shared;
         internal static double HIGHEST_ROLL = 0.1;
-        public BattleStateUtilities(List<EntityDataModel> allies, List<EntityDataModel> enemies)
+        public BattleStateUtilities(List<EntityBattleData> allies, List<EntityBattleData> enemies)
         {
             this.allies = allies;
             this.enemies = enemies;
@@ -26,7 +26,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         // Damage calculators
 
-        internal int ComputePhysicalDamage(EntityDataModel initiator, EntityDataModel target, BattleMoves.PhysicalAttackMove move)
+        internal int ComputePhysicalDamage(EntityBattleData initiator, EntityBattleData target, BattleMoves.PhysicalAttackMove move)
         {
             double multiplier = (double)initiator.strength / target.physicalResistance;
             double roll = rng.NextDouble() * BattleStateUtilities.HIGHEST_ROLL;

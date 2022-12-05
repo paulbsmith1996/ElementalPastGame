@@ -279,9 +279,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             double gameObjectTileY = (double)(this.CenterY + CommonConstants.TILE_VIEW_DISTANCE - gameObjectModel.Location.Y - gameObjectModel.YAnimationOffset - animationYOffset) * CommonConstants.TILE_DIMENSION;
 
             List<Bitmap> bitmaps = new();
-            if (gameObjectModel.dataModel.Image != null)
+            if (gameObjectModel.imageData.Image != null)
             {
-                Bitmap bitmap = new Bitmap((Bitmap)gameObjectModel.dataModel.Image, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
+                Bitmap bitmap = new Bitmap((Bitmap)gameObjectModel.imageData.Image, CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
                 bitmaps.Add(bitmap);
             }
 

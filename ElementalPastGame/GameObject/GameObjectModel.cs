@@ -29,19 +29,19 @@ namespace ElementalPastGame.GameObject
         public MovementType movementType { get; set; }
         public List<Direction> Moves { get; set; }
         public bool shouldCycleMoves { get; set; }
-        public EntityDataModel dataModel { get; set; }
+        public EntityImageData imageData { get; set; }
 
         internal int currentMoveIndex = 0;
         internal int runloopsSinceLastRandomOrAggressiveMove = 0;
 
         internal Random rng = new Random();
 
-        public GameObjectModel(EntityType type, int level, int X, int Y, MovementType movementType = MovementType.Wander)
+        public GameObjectModel(EntityType type, int X, int Y, MovementType movementType = MovementType.Wander)
         {
             this.movementType = movementType;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
-            this.dataModel = new EntityDataModel(type, level);
+            this.imageData = new EntityImageData(type);
 
             // Use Szudik's function to uniquely hash every X,Y pair to a unique entity ID
             this.EntityID = X >= Y ? X * X + X + Y : X + Y * Y;
@@ -52,12 +52,12 @@ namespace ElementalPastGame.GameObject
 
         public void LoadIfNeeded()
         {
-            this.dataModel.Load();
+            this.imageData.Load();
         }
 
         public void Unload()
         {
-            this.dataModel.Image = null;
+            this.imageData.Image = null;
         }
 
         public void MoveTo(int NewX, int NewY, bool isAnimated)

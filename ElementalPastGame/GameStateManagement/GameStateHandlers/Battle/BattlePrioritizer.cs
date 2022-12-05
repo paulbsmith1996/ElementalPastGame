@@ -11,24 +11,24 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
     {
         public static int ENTITY_QUEUE_LENGTH = 6;
         // This list will always contain the following ENTITY_QUEUE_LENGTH entities to act. 
-        internal Queue<EntityDataModel> nextOrderedEntityModels = new();
-        internal Dictionary<EntityDataModel, int> priorityMap = new();
+        internal Queue<EntityBattleData> nextOrderedEntityModels = new();
+        internal Dictionary<EntityBattleData, int> priorityMap = new();
 
-        public BattlePrioritizer(List<EntityDataModel> entityDataModels)
+        public BattlePrioritizer(List<EntityBattleData> EntityBattleDatas)
         {
-            this.InitializePriorities(entityDataModels);
+            this.InitializePriorities(EntityBattleDatas);
             this.ComputeNextEntitiesForRange(ENTITY_QUEUE_LENGTH);
         }
 
-        public EntityDataModel PopNextEntityAndEnqueue()
+        public EntityBattleData PopNextEntityAndEnqueue()
         {
             this.EnqueueNextEntity();
             return this.nextOrderedEntityModels.Dequeue();
         }
 
-        internal void InitializePriorities(List<EntityDataModel> entityDataModels)
+        internal void InitializePriorities(List<EntityBattleData> EntityBattleDatas)
         {
-            foreach (EntityDataModel dataModel in entityDataModels)
+            foreach (EntityBattleData dataModel in EntityBattleDatas)
             {
                 this.priorityMap.Add(dataModel, dataModel.agility);
             }
@@ -44,10 +44,10 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal void EnqueueNextEntity()
         {
-            List<EntityDataModel> entityDataModels = this.priorityMap.Keys.ToList();
-            EntityDataModel nextEntity = entityDataModels.First();
+            List<EntityBattleData> EntityBattleDatas = this.priorityMap.Keys.ToList();
+            EntityBattleData nextEntity = EntityBattleDatas.First();
             int maxPriority = this.priorityMap[nextEntity];
-            foreach (EntityDataModel dataModel in entityDataModels)
+            foreach (EntityBattleData dataModel in EntityBattleDatas)
             {
                 int priority = this.priorityMap[dataModel];
                 if (priority > maxPriority)
@@ -62,9 +62,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             this.nextOrderedEntityModels.Enqueue(nextEntity);
         }
 
-        internal void RecomputePrioritiesWithNextEntity(EntityDataModel nextEntity)
+        internal void RecomputePrioritiesWithNextEntity(EntityBattleData nextEntity)
         {
-            foreach (EntityDataModel dataModel in this.priorityMap.Keys.ToList())
+            foreach (EntityBattleData dataModel in this.priorityMap.Keys.ToList())
             {
                 if (dataModel.Equals(nextEntity))
                 {

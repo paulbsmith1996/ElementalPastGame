@@ -98,7 +98,7 @@ namespace ElementalPastGame.GameStateManagement
                     {
                         encounterID = (long)encounterIDObject;
                     }
-                    List<EntityDataModel> allies = new() { new EntityDataModel(EntityType.Aendon, 5), new EntityDataModel(EntityType.Aendon, 5), new EntityDataModel(EntityType.Aendon, 5), new EntityDataModel(EntityType.Aendon, 5) };
+                    List<EntityBattleData> allies = new() { new EntityBattleData(EntityType.Aendon, 5), new EntityBattleData(EntityType.Aendon, 5), new EntityBattleData(EntityType.Aendon, 5), new EntityBattleData(EntityType.Aendon, 5) };
                     this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), allies, encounterID);
                     break;
             }

@@ -60,7 +60,7 @@ namespace ElementalPastGame.GameObject
         public bool shouldCycleMoves { get; set; }
         public MovementType movementType { get; set; }
 
-        public EntityDataModel dataModel { get; set; }
+        public EntityImageData imageData { get; set; }
 
         public void LoadIfNeeded();
         public void Unload();

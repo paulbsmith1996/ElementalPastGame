@@ -8,7 +8,7 @@ namespace ElementalPastGame.Items.Inventory
 {
     public struct InventoryItemEntry
     {
-        public Item item { get; set; }
+        public IItem item { get; set; }
         public int count { get; set; }
     }
 }

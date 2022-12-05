@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace ElementalPastGame.Items
 {
-    public interface Item
+    public interface IItem
     {
         enum ItemType
         {

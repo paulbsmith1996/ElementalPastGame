@@ -16,11 +16,25 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         internal List<EntityDataModel> allies { get; set; }
         internal List<EntityDataModel> enemies { get; set; }
         internal Bitmap? background;
+        Random rng = Random.Shared;
+        internal static double HIGHEST_ROLL = 0.1;
         public BattleStateUtilities(List<EntityDataModel> allies, List<EntityDataModel> enemies)
         {
             this.allies = allies;
             this.enemies = enemies;
         }
+
+        // Damage calculators
+
+        internal int ComputePhysicalDamage(EntityDataModel initiator, EntityDataModel target, BattleMoves.PhysicalAttackMove move)
+        {
+            double multiplier = (double)initiator.strength / target.physicalResistance;
+            double roll = rng.NextDouble() * BattleStateUtilities.HIGHEST_ROLL;
+            int baseDamage = initiator.activeEquipment.weapon.baseDamage;
+            return (int)((multiplier + roll) * baseDamage);
+        }
+
+        // Position calculators
 
         internal float GetBackgroundYForLineUpIndex(int lineUpIndex, bool isEnemy)
         {

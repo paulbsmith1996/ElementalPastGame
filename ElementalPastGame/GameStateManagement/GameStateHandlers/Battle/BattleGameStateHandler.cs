@@ -20,7 +20,7 @@ using ElementalPastGame.TileManagement.Utility;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.Design.AxImporter;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
-using static ElementalPastGame.Items.Item;
+using static ElementalPastGame.Items.IItem;
 
 namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 {

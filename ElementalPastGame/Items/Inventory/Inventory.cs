@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using static ElementalPastGame.Items.Item;
+using static ElementalPastGame.Items.IItem;
 
 namespace ElementalPastGame.Items.Inventory
 {
@@ -12,7 +12,7 @@ namespace ElementalPastGame.Items.Inventory
     {
         internal Dictionary<ItemType, List<InventoryItemEntry>> inventory = new();
 
-        public void AddItem(Item item, int amount)
+        public void AddItem(IItem item, int amount)
         {
             List<InventoryItemEntry>? typedItems = inventory.GetValueOrDefault(item.type);
             if (typedItems == null)
@@ -46,7 +46,7 @@ namespace ElementalPastGame.Items.Inventory
             inventory[item.type].Add(entryToAppend);
         }
 
-        public bool RemoveItem(Item item, int amount)
+        public bool RemoveItem(IItem item, int amount)
         {
             InventoryItemEntry? existingEntry = GetExistingEntryForItem(item);
             if (existingEntry == null || ((InventoryItemEntry)existingEntry).count < amount)
@@ -64,7 +64,7 @@ namespace ElementalPastGame.Items.Inventory
             return inventory[type] ?? new();
         }
 
-        internal InventoryItemEntry? GetExistingEntryForItem(Item item)
+        internal InventoryItemEntry? GetExistingEntryForItem(IItem item)
         {
             List<InventoryItemEntry> typedItems = inventory[item.type];
             if (typedItems == null)

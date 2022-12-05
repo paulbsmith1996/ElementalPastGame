@@ -1,4 +1,5 @@
-﻿using ElementalPastGame.TileManagement.Utility;
+﻿using ElementalPastGame.Items.Equipment;
+using ElementalPastGame.TileManagement.Utility;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,8 +10,15 @@ namespace ElementalPastGame.GameObject.Entities
 {
     public class EntityDataModel
     {
+        public enum DefenseType
+        {
+            Heavy,
+            Light,
+            Skirmisher
+        };
         public String name { get; set; }
         public int level { get; set; }
+        public DefenseType type { get; set; }
         public int health { get; set; }
         public int maxHealth { get; set; }
         public int agility { get; set; }
@@ -19,6 +27,7 @@ namespace ElementalPastGame.GameObject.Entities
         public int strength { get; set; }
         public int physicalResistance { get; set; }
         public bool isDead { get; set; }
+        public ActiveEquipment activeEquipment { get; set; }
 
         /// <summary>
         /// This ImageID should be specific to the kind of GameObject that inherits from this

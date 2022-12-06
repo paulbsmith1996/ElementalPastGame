@@ -1,5 +1,7 @@
 ﻿using ElementalPastGame.Common;
 using ElementalPastGame.GameObject.Entities;
+using ElementalPastGame.Items.Equipment;
+using ElementalPastGame.Items.Equipment.Weapons;
 using ElementalPastGame.TileManagement.Utility;
 using System;
 using System.Collections.Generic;
@@ -7,18 +9,23 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using static ElementalPastGame.Items.Equipment.Weapons.Weapon;
 
 namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 {
     public class BattleStateUtilities
     {
-
-        internal List<EntityBattleData> allies { get; set; }
-        internal List<EntityBattleData> enemies { get; set; }
+        internal List<EntityBattleModel> allies { get; set; }
+        internal List<EntityBattleModel> enemies { get; set; }
         internal Bitmap? background;
+
         Random rng = Random.Shared;
+
         internal static double HIGHEST_ROLL = 0.1;
-        public BattleStateUtilities(List<EntityBattleData> allies, List<EntityBattleData> enemies)
+
+        internal static double BASE_UNARMED_DAMAGE = 20;
+
+        public BattleStateUtilities(List<EntityBattleModel> allies, List<EntityBattleModel> enemies)
         {
             this.allies = allies;
             this.enemies = enemies;
@@ -26,12 +33,27 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         // Damage calculators
 
-        internal int ComputePhysicalDamage(EntityBattleData initiator, EntityBattleData target, BattleMoves.PhysicalAttackMove move)
+        internal int ComputePhysicalDamage(EntityBattleModel initiator, EntityBattleModel target, WeaponAction weaponAction)
         {
-            double multiplier = (double)initiator.strength / target.physicalResistance;
-            double roll = rng.NextDouble() * BattleStateUtilities.HIGHEST_ROLL;
-            int baseDamage = initiator.activeEquipment.weapon.baseDamage;
-            return (int)((multiplier + roll) * baseDamage);
+            ActiveEquipment? activeEquipment = initiator.activeEquipment;
+            Weapon? equippedWeapon = activeEquipment?.weapon;
+
+            int baseDamage = 20;
+            double weaponMultiplier = 1.0;
+
+            if (equippedWeapon != null)
+            {
+                baseDamage = equippedWeapon.baseDamage;
+                weaponMultiplier = equippedWeapon.multipliersForWeaponActions.GetValueOrDefault(weaponAction);
+                if (weaponMultiplier == 0)
+                {
+                    weaponMultiplier = 1.0;
+                }
+            }
+
+            double strengthResistanceRatio = (float)initiator.strength / target.physicalResistance;
+            double roll = (float)(rng.NextDouble() * BattleStateUtilities.HIGHEST_ROLL);
+            return (int)((strengthResistanceRatio + roll + weaponMultiplier) * baseDamage);
         }
 
         // Position calculators

@@ -38,6 +38,8 @@ namespace ElementalPastGame.Components
         internal List<ITextMenuObserver> observers = new();
         internal bool needsRenderingModelUpdate;
 
+        public static char KEY_PATH_DELIMITER = '>';
+
         public ITextComponent textComponent { 
             get {
                 return this;
@@ -262,7 +264,7 @@ namespace ElementalPastGame.Components
             }
 
             TextMenu parentMenu = (TextMenu)parent;
-            return parentMenu.GetAncestorPath() + ">" + parentMenu.selectedOption;
+            return parentMenu.GetAncestorPath() + KEY_PATH_DELIMITER + parentMenu.selectedOption;
         }
 
         internal float ComputeLongestRowWidth(Graphics graphics)

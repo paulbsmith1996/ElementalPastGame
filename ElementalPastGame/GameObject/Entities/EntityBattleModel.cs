@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ElementalPastGame.GameObject.Entities
 {
-    public class EntityBattleData
+    public class EntityBattleModel
     {
         public enum DefenseType
         {
@@ -25,11 +25,11 @@ namespace ElementalPastGame.GameObject.Entities
         public int strength { get; set; }
         public int physicalResistance { get; set; }
         public bool isDead { get; set; }
-        public ActiveEquipment activeEquipment { get; set; }
+        public ActiveEquipment? activeEquipment { get; set; }
         public EntityImageData imageData { get; set; }
         public EntityCharacterData characterData { get; set; }
 
-        public EntityBattleData(EntityType type, int level)
+        public EntityBattleModel(EntityType type, int level)
         {
             Dictionary<String, Object> entityInfo = EntityLookup.Mapping[type];
             this.characterData = new(type, level);

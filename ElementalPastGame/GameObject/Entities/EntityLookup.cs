@@ -37,7 +37,7 @@ namespace ElementalPastGame.GameObject.Entities
         public static Dictionary<EntityType, Dictionary<String, Object>> Mapping = new()
         {
             { EntityType.Goblin, new Dictionary<string, object>() { { NAME_KEY, "Goblin" },
-                                                              { DEFENSE_TYPE_KEY, EntityBattleData.DefenseType.Light },
+                                                              { DEFENSE_TYPE_KEY, EntityBattleModel.DefenseType.Light },
                                                               { MAX_HEALTH_KEY, 100 },
                                                               { MAX_HEALTH_LEVEL_UP_INCREMENT_KEY, 10},
                                                               { AGILITY_KEY, 50 },
@@ -55,7 +55,7 @@ namespace ElementalPastGame.GameObject.Entities
             },
 
             { EntityType.Aendon, new Dictionary<string, object>() { { NAME_KEY, "Aendon" },
-                                                              { DEFENSE_TYPE_KEY, EntityBattleData.DefenseType.Light },
+                                                              { DEFENSE_TYPE_KEY, EntityBattleModel.DefenseType.Light },
                                                               { MAX_HEALTH_KEY, 150 },
                                                               { MAX_HEALTH_LEVEL_UP_INCREMENT_KEY, 12},
                                                               { AGILITY_KEY, 75 },

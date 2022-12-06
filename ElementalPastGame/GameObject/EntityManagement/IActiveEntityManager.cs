@@ -24,6 +24,6 @@ namespace ElementalPastGame.GameObject.EntityManagement
 
         public void MarkEntityIDDead(long entityID);
 
-        public List<EntityBattleData> enemiesForEncounterID(long encounterID);
+        public List<EntityBattleModel> enemiesForEncounterID(long encounterID);
     }
 }

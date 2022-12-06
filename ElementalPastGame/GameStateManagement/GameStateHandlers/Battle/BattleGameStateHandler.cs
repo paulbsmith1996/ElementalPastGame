@@ -13,6 +13,8 @@ using ElementalPastGame.Components.ComponentSequences;
 using ElementalPastGame.GameObject.Entities;
 using ElementalPastGame.GameObject.EntityManagement;
 using ElementalPastGame.GameObject.GameStateHandlers;
+using ElementalPastGame.Items.Equipment;
+using ElementalPastGame.Items.Equipment.Weapons;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.Rendering.Utility;
@@ -20,6 +22,7 @@ using ElementalPastGame.TileManagement.Utility;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.Design.AxImporter;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
+using static ElementalPastGame.Items.Equipment.Weapons.Weapon;
 using static ElementalPastGame.Items.IItem;
 
 namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
@@ -48,14 +51,15 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         internal BattleState state;
         internal Inventory inventory;
 
-        internal List<EntityBattleData> enemies;
-        internal List<EntityBattleData> allies;
+        internal List<EntityBattleModel> enemies;
+        internal List<EntityBattleModel> allies;
         internal BattlePrioritizer battlePrioritizer;
         internal List<RenderingModel> allyRenderingModels = new();
         internal List<RenderingModel> enemyRenderingModels = new();
         internal int selectedEnemyIndex;
         internal List<int> deadEnemyIndexes = new();
-        internal EntityBattleData activeEntity;
+        internal EntityBattleModel activeEntity;
+        internal WeaponAction selectedMove;
         internal long encounterID;
 
         internal Bitmap background;
@@ -65,7 +69,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         internal DateTime lastEnemySelectionInputTime;
         internal double timeSinceLastEnemySelectionMove;
 
-        public BattleGameStateHandler(Inventory inventory, List<EntityBattleData> allies, long encounterID)
+        public BattleGameStateHandler(Inventory inventory, List<EntityBattleModel> allies, long encounterID)
         {
             state = BattleState.Start;
             this.inventory = inventory;
@@ -89,7 +93,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             lastEnemySelectionInputTime = DateTime.Now;
             timeSinceLastEnemySelectionMove = CommonConstants.KEY_DEBOUNCE_TIME_MS;
 
-            List<EntityBattleData> entities = new();
+            List<EntityBattleModel> entities = new();
             entities.AddRange(allies);
             entities.AddRange(enemies);
             this.battlePrioritizer = new BattlePrioritizer(entities);
@@ -104,7 +108,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             allyRenderingModels = new();
             for (int allyIndex = 0; allyIndex < allies.Count; allyIndex++)
             {
-                EntityBattleData ally = allies.ElementAt(allyIndex);
+                EntityBattleModel ally = allies.ElementAt(allyIndex);
                 RenderingModel allyRenderingModel = ComputeRenderingModel(ally, allyIndex, false);
                 allyRenderingModels.Add(allyRenderingModel);
             }
@@ -112,13 +116,13 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             enemyRenderingModels = new();
             for (int enemyIndex = 0; enemyIndex < enemies.Count; enemyIndex++)
             {
-                EntityBattleData enemy = enemies.ElementAt(enemyIndex);
+                EntityBattleModel enemy = enemies.ElementAt(enemyIndex);
                 RenderingModel enemyRenderingModel = ComputeRenderingModel(enemy, enemyIndex, true);
                 enemyRenderingModels.Add(enemyRenderingModel);
             }
         }
 
-        internal RenderingModel ComputeRenderingModel(EntityBattleData dataModel, int lineUpIndex, bool isEnemy)
+        internal RenderingModel ComputeRenderingModel(EntityBattleModel dataModel, int lineUpIndex, bool isEnemy)
         {
             Point entityLocation = this.battleStateUtilities.ComputeRenderLocationForLineUpIndex(lineUpIndex, isEnemy);
 
@@ -266,8 +270,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal int DamageSelectedEnemies()
         {
-            int damage = 20;
-            EntityBattleData selectedEnemyModel = enemies.ElementAt(selectedEnemyIndex);
+            EntityBattleModel selectedEnemyModel = enemies.ElementAt(selectedEnemyIndex);
+            int damage = battleStateUtilities.ComputePhysicalDamage(this.activeEntity, selectedEnemyModel, this.selectedMove);
             selectedEnemyModel.Damage(damage);
 
             if (selectedEnemyModel.isDead)
@@ -288,14 +292,14 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             {
                 randomIndex++;
             }
-            EntityBattleData selectedAlly = this.allies.ElementAt(randomIndex);
+            EntityBattleModel selectedAlly = this.allies.ElementAt(randomIndex);
             int damage = 20;
             selectedAlly.Damage(damage);
 
             this.TransitionToMoveResolutionDisplay(selectedAlly, damage);
         }
 
-        internal void TransitionToMoveResolutionDisplay(EntityBattleData target, int damage)
+        internal void TransitionToMoveResolutionDisplay(EntityBattleModel target, int damage)
         {
             if (target.isDead)
             {
@@ -308,7 +312,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         public bool BattleVictorious()
         {
-            foreach (EntityBattleData enemyDataModel in enemies)
+            foreach (EntityBattleModel enemyDataModel in enemies)
             {
                 if (!enemyDataModel.isDead)
                 {
@@ -479,9 +483,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             }
         }
 
-        internal bool IsEntityAlly(EntityBattleData candidate)
+        internal bool IsEntityAlly(EntityBattleModel candidate)
         {
-            foreach (EntityBattleData dataModel in this.allies)
+            foreach (EntityBattleModel dataModel in this.allies)
             {
                 if (dataModel.Equals(candidate))
                 {
@@ -490,6 +494,17 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             }
 
             return false;
+        }
+
+        internal List<WeaponAction> GetWeaponActionsForEntityBattleModel(EntityBattleModel battleModel)
+        {
+            ActiveEquipment? activeEquipment = battleModel.activeEquipment;
+            if (activeEquipment == null || activeEquipment.weapon == null)
+            {
+                return new List<WeaponAction>() { WeaponAction.Punch };
+            }
+
+            return activeEquipment.weapon.multipliersForWeaponActions.Keys.ToList();
         }
 
         internal InteractableTextComponentTree GetMoveSelectionTextComponents()
@@ -507,6 +522,12 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             TextMenu mainBattleMenu = new(false, 500, 700);
             mainBattleMenu.AddMenuObserver(this);
 
+            // Attack moves submenu
+            List<String> weaponActions = this.GetWeaponActionsForEntityBattleModel(this.activeEntity).Select(weaponAction => weaponAction.ToString()).ToList();
+            TextMenu weaponActionsSubmenu = new TextMenu(weaponActions, true, 500, 700);
+            mainBattleMenu.AddSubOptionWithKey(weaponActionsSubmenu, ATTACK_STRING);
+
+            // Inventory submenu
             List<string> inventoryContents = new();
             foreach (InventoryItemEntry entry in inventory.GetItemEntriesForType(ItemType.Consumable))
             {
@@ -514,9 +535,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 inventoryContents.Add(itemOptionString);
             }
             TextMenu inventorySubmenu = new TextMenu(inventoryContents, true, 500, 700);
-
-            mainBattleMenu.AddTerminalOption(ATTACK_STRING);
             mainBattleMenu.AddSubOptionWithKey(inventorySubmenu, CONSUME_STRING);
+
             mainBattleMenu.AddTerminalOption(ESCAPE_STRING);
 
             firstBoxNode.SetChild(secondBoxNode);
@@ -525,9 +545,9 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             return moveSelectionTextComponents;
         }
 
-        internal InteractableTextComponentTree GetMoveResolutionTextComponents(EntityBattleData actor, EntityBattleData recipient, int damage)
+        internal InteractableTextComponentTree GetMoveResolutionTextComponents(EntityBattleModel actor, EntityBattleModel recipient, int damage)
         {
-            String damageString = actor.characterData.name + " dealt " + damage + " damage to " + recipient.characterData.name;
+            String damageString = actor.characterData.name + " used " + this.selectedMove.ToString() + " and dealt " + damage + " damage to " + recipient.characterData.name + ".";
             GameTextBox enemyDamageInformationBox = new(damageString, 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
             TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(enemyDamageInformationBox);
             this.moveResolutionTextComponents = new InteractableTextComponentTree(firstBoxNode);
@@ -540,7 +560,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             String allyInfoString = "";
             for (int allyIndex = 0; allyIndex < this.allies.Count; allyIndex++)
             {
-                EntityBattleData allyDataModel = this.allies.ElementAt(allyIndex);
+                EntityBattleModel allyDataModel = this.allies.ElementAt(allyIndex);
                 allyInfoString += allyDataModel.characterData.name + "  :  " + allyDataModel.health + "/" + allyDataModel.maxHealth;
                 if (allyIndex != this.allies.Count - 1)
                 {
@@ -559,6 +579,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             }
             else if (key.Contains(ATTACK_STRING))
             {
+                String selectedWeaponAction = key.Split(TextMenu.KEY_PATH_DELIMITER).Last();
+                this.selectedMove = Weapon.WeaponActionForString(selectedWeaponAction);
                 this.state = BattleState.EnemySelection;
             }
         }

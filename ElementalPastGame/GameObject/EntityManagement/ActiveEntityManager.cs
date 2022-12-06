@@ -17,7 +17,7 @@ namespace ElementalPastGame.GameObject.EntityManagement
         internal Dictionary<Location, IGameObjectModel> EntitiesByLocation = new();
         internal List<IGameObjectModel> previousActiveEntityModels = new();
         internal HashSet<long> deadEntityIDs = new();
-        internal Dictionary<long, List<EntityBattleData>> enemyListsByEncounterID = new();
+        internal Dictionary<long, List<EntityBattleModel>> enemyListsByEncounterID = new();
         public static ActiveEntityManager GetInstance()
         {
             if (_instance != null)
@@ -74,7 +74,7 @@ namespace ElementalPastGame.GameObject.EntityManagement
             deadEntityIDs.Add(entityID);
         }
 
-        public List<EntityBattleData> enemiesForEncounterID(long encounterID)
+        public List<EntityBattleModel> enemiesForEncounterID(long encounterID)
         {
             return this.enemyListsByEncounterID[encounterID];
         }
@@ -88,7 +88,7 @@ namespace ElementalPastGame.GameObject.EntityManagement
             IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X - 10, CommonConstants.GAME_START_LOCATION.Y);
             goblin1.movementType = MovementType.Aggressive;
             this.AddEntityToMapping(goblin1);
-            List<EntityBattleData> goblin1EncounterList = new() { new EntityBattleData(EntityType.Goblin, 5), new EntityBattleData(EntityType.Goblin, 5) };
+            List<EntityBattleModel> goblin1EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5), new EntityBattleModel(EntityType.Goblin, 5) };
             this.RegisterEnemyListForEncounterID(goblin1EncounterList, goblin1.EntityID);
 
             IGameObjectModel goblin2 = new Goblin(860, 915);
@@ -97,7 +97,7 @@ namespace ElementalPastGame.GameObject.EntityManagement
             //goblin1.Moves = goblin1Moves;
             goblin2.movementType = MovementType.Wander;
             this.AddEntityToMapping(goblin2);
-            List<EntityBattleData> goblin2EncounterList = new() { new EntityBattleData(EntityType.Goblin, 5) };
+            List<EntityBattleModel> goblin2EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5) };
             this.RegisterEnemyListForEncounterID(goblin2EncounterList, goblin2.EntityID);
         }
 
@@ -106,7 +106,7 @@ namespace ElementalPastGame.GameObject.EntityManagement
             EntitiesByLocation.Add(gameObjectModel.Location, gameObjectModel);
         }
 
-        internal void RegisterEnemyListForEncounterID(List<EntityBattleData> enemies, long encounterID)
+        internal void RegisterEnemyListForEncounterID(List<EntityBattleModel> enemies, long encounterID)
         {
             this.enemyListsByEncounterID[encounterID] = enemies;
         }

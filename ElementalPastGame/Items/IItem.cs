@@ -27,6 +27,8 @@ namespace ElementalPastGame.Items
         public static int WOOD_SWORD_ID = 1;
         public static int BRONZE_SWORD_ID = 2;
 
+        public static int BRONZE_DAGGER_ID = 3;
+
         // Consumable IDs
         public static int MINOR_HEALTH_POTION_ID = 1000;
         public static int HEALTH_POTION_ID = 1001;

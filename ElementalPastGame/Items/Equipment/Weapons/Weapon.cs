@@ -45,8 +45,10 @@ namespace ElementalPastGame.Items.Equipment.Weapons
 
         // Weapon Constants
 
-        public static int BRONZE_SWORD_BASE_DAMAGE = 100;
-        public static int WOOD_SWORD_BASE_DAMAGE = 75;
+        public static int BRONZE_SWORD_BASE_DAMAGE = 50;
+        public static int WOOD_SWORD_BASE_DAMAGE = 30;
+
+        public static int BRONZE_DAGGER_BASE_DAMAGE = 45;
 
         public static Dictionary<WeaponAction, double> GetMovesForWeaponType(WeaponType weaponType)
         {

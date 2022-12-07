@@ -169,7 +169,7 @@ namespace ElementalPastGame.Components
                     TextMenu currentMenu = (TextMenu)currentTextComponentTree;
                     foreach (ITextMenuObserver observer in currentMenu.observers)
                     {
-                        observer.MenuDidResolve(currentMenu, this.GetAncestorPath() + this.selectedOption);
+                        observer.MenuDidResolve(currentMenu, this.GetAncestorPath() + KEY_PATH_DELIMITER + this.selectedOption);
                     }
                 }
                 currentTextComponentTree = currentTextComponentTree.GetParentTree();

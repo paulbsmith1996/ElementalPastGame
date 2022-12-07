@@ -45,7 +45,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         internal Color enemySelectorColor;
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
         internal BattleStateUtilities battleStateUtilities { get; set; }
-        internal InteractableTextComponentTree? moveSelectionTextComponents;
+        internal Dictionary<EntityBattleModel, InteractableTextComponentTree> moveSelectionTextComponentsByBattleModel = new Dictionary<EntityBattleModel, InteractableTextComponentTree>();
         internal InteractableTextComponentTree? moveResolutionTextComponents;
 
         internal BattleState state;
@@ -306,7 +306,6 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 this.UpdateGameObjectRenderingModels();
             }
             this.moveResolutionTextComponents = this.GetMoveResolutionTextComponents(this.activeEntity, target, damage);
-            this.activeEntity = this.battlePrioritizer.PopNextEntityAndEnqueue();
             this.state = BattleState.MoveResolutionInfoDisplay;
         }
 
@@ -509,15 +508,16 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
         internal InteractableTextComponentTree GetMoveSelectionTextComponents()
         {
-            if (moveSelectionTextComponents != null)
+            InteractableTextComponentTree? existingTextComponents = this.moveSelectionTextComponentsByBattleModel.GetValueOrDefault(this.activeEntity);
+            if (existingTextComponents != null)
             {
-                return moveSelectionTextComponents;
+                return existingTextComponents;
             }
 
-            GameTextBox firstBox = new("An enemy unit has spotted you.", 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
-            GameTextBox secondBox = new("Gather up and prepare to defend yourselves.", 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
-            TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(firstBox);
-            TextComponentTreeTextBoxNode secondBoxNode = new TextComponentTreeTextBoxNode(secondBox);
+            //GameTextBox firstBox = new("An enemy unit has spotted you.", 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
+            //GameTextBox secondBox = new("Gather up and prepare to defend yourselves.", 0, CommonConstants.GAME_DIMENSION - CommonConstants.STANDARD_TEXTBOX_HEIGHT - 4, CommonConstants.GAME_DIMENSION, CommonConstants.STANDARD_TEXTBOX_HEIGHT);
+            //TextComponentTreeTextBoxNode firstBoxNode = new TextComponentTreeTextBoxNode(firstBox);
+            //TextComponentTreeTextBoxNode secondBoxNode = new TextComponentTreeTextBoxNode(secondBox);
 
             TextMenu mainBattleMenu = new(false, 500, 700);
             mainBattleMenu.AddMenuObserver(this);
@@ -539,10 +539,11 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
 
             mainBattleMenu.AddTerminalOption(ESCAPE_STRING);
 
-            firstBoxNode.SetChild(secondBoxNode);
-            secondBoxNode.SetChild(mainBattleMenu);
-            moveSelectionTextComponents = new InteractableTextComponentTree(firstBoxNode);
-            return moveSelectionTextComponents;
+            //firstBoxNode.SetChild(secondBoxNode);
+            //secondBoxNode.SetChild(mainBattleMenu);
+            InteractableTextComponentTree activeComponentTree = new InteractableTextComponentTree(mainBattleMenu);
+            this.moveSelectionTextComponentsByBattleModel[this.activeEntity] = activeComponentTree;
+            return activeComponentTree;
         }
 
         internal InteractableTextComponentTree GetMoveResolutionTextComponents(EntityBattleModel actor, EntityBattleModel recipient, int damage)
@@ -582,6 +583,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 String selectedWeaponAction = key.Split(TextMenu.KEY_PATH_DELIMITER).Last();
                 this.selectedMove = Weapon.WeaponActionForString(selectedWeaponAction);
                 this.state = BattleState.EnemySelection;
+                this.moveSelectionTextComponentsByBattleModel.Remove(this.activeEntity);
             }
         }
 

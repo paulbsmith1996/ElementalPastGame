@@ -1,21 +1,11 @@
-﻿using ElementalPastGame.Common;
-using ElementalPastGame.GameObject.Enemies;
-using ElementalPastGame.GameObject.Entities;
+﻿using ElementalPastGame.GameObject.Entities;
 using ElementalPastGame.GameObject.GameStateHandlers;
-using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.GameStateManagement.GameStateHandlers.Battle;
+using ElementalPastGame.Items.Equipment;
+using ElementalPastGame.Items.Equipment.Weapons;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
-using ElementalPastGame.TileManagement;
-using ElementalPastGame.TileManagement.Utility;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection.Metadata;
-using System.Text;
-using System.Threading.Tasks;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 
 namespace ElementalPastGame.GameStateManagement
@@ -98,7 +88,17 @@ namespace ElementalPastGame.GameStateManagement
                     {
                         encounterID = (long)encounterIDObject;
                     }
-                    List<EntityBattleModel> allies = new() { new EntityBattleModel(EntityType.Aendon, 5), new EntityBattleModel(EntityType.Aendon, 5), new EntityBattleModel(EntityType.Aendon, 5), new EntityBattleModel(EntityType.Aendon, 5) };
+                    EntityBattleModel swordBattleModel = new EntityBattleModel(EntityType.Aendon, 4);
+                    ActiveEquipment swordActiveEquipment = new ActiveEquipment();
+                    swordActiveEquipment.weapon = new WoodSword();
+                    swordBattleModel.activeEquipment = swordActiveEquipment;
+
+                    EntityBattleModel daggerBattleModel = new EntityBattleModel(EntityType.Aendon, 4);
+                    ActiveEquipment daggerActiveEquipment = new ActiveEquipment();
+                    daggerActiveEquipment.weapon = new BronzeDagger();
+                    daggerBattleModel.activeEquipment = daggerActiveEquipment;
+
+                    List<EntityBattleModel> allies = new() { swordBattleModel, daggerBattleModel };
                     this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), allies, encounterID);
                     break;
             }

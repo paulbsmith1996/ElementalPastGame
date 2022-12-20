@@ -31,6 +31,20 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             this.enemies = enemies;
         }
 
+        internal WeaponAction SelectRandomMoveForEntityBattleModel(EntityBattleModel battleModel)
+        {
+            ActiveEquipment? activeEquipment = battleModel.activeEquipment;
+            Weapon? equippedWeapon = activeEquipment?.weapon;
+            
+            if (equippedWeapon == null)
+            {
+                return WeaponAction.Punch;
+            }
+
+            List<WeaponAction> potentialActions = equippedWeapon.multipliersForWeaponActions.Keys.ToList();
+            return potentialActions.ElementAt(rng.Next(potentialActions.Count));
+        }
+
         // Damage calculators
 
         internal int ComputePhysicalDamage(EntityBattleModel initiator, EntityBattleModel target, WeaponAction weaponAction)

@@ -251,9 +251,9 @@ namespace ElementalPastGame.TileManagement
         {
 
             // Fence 1a
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 820, 870, 820, 890);
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 820, 880, 820, 890);
             // Fence 1b
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 810, 870, 810, 920);
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 810, 880, 810, 920);
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.CornerTR), 810, 920);
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.CornerTR), 820, 890);
         }

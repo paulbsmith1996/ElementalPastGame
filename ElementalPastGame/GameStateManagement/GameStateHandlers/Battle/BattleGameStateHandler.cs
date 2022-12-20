@@ -293,7 +293,8 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
                 randomIndex++;
             }
             EntityBattleModel selectedAlly = this.allies.ElementAt(randomIndex);
-            int damage = 20;
+            this.selectedMove = battleStateUtilities.SelectRandomMoveForEntityBattleModel(this.activeEntity);
+            int damage = battleStateUtilities.ComputePhysicalDamage(this.activeEntity, selectedAlly, this.selectedMove);
             selectedAlly.Damage(damage);
 
             this.TransitionToMoveResolutionDisplay(selectedAlly, damage);

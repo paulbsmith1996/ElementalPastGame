@@ -85,7 +85,7 @@ namespace ElementalPastGame.GameObject.EntityManagement
         }
         internal void LoadEntitiesByLocation()
         {
-            IGameObjectModel goblin1 = new Goblin(CommonConstants.GAME_START_LOCATION.X - 10, CommonConstants.GAME_START_LOCATION.Y);
+            IGameObjectModel goblin1 = new Goblin(890, 900);
             goblin1.movementType = MovementType.Aggressive;
             this.AddEntityToMapping(goblin1);
             List<EntityBattleModel> goblin1EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5), new EntityBattleModel(EntityType.Goblin, 5) };

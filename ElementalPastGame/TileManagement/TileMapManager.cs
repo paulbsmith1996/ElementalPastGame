@@ -251,11 +251,24 @@ namespace ElementalPastGame.TileManagement
         {
 
             // Fence 1a
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 820, 880, 820, 890);
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 820, 881, 820, 890);
             // Fence 1b
-            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 810, 880, 810, 920);
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.Vertical), 810, 881, 810, 920);
+            this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.Vertical), 810, 881);
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.Dirt, TileOrientation.Vertical), 810, 840, 810, 880);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.DirtGrass6), 809, 840, 809, 880);
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.CornerTR), 810, 920);
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.Grass, TileOrientation.CornerTR), 820, 890);
+            this.SetTileAtLocation(TileFactory.TileWithBackground(TextureMapping.DirtGrass3), 809, 881);
+
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.DirtGrass2), 811, 881, 819, 881);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Dirt), 811, 838, 850, 880);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 812, 840, 848, 878);
+
+            this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.CornerBR), 820, 881);
+            this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.Horizontal), 821, 881, 880, 881);
+
+
         }
     }
 }

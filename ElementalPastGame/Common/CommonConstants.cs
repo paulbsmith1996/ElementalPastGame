@@ -24,8 +24,8 @@ namespace ElementalPastGame.Common
         /// </summary>
         public static Location GAME_START_LOCATION = new Location()
         {
-            X = 900,
-            Y = 900,
+            X = 815,
+            Y = 880,
         };
         /// <summary>
         /// The max width and height that any tile can be placed at in the TileManager.

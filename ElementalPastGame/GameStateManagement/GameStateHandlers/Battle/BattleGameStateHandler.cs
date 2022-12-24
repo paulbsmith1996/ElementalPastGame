@@ -18,6 +18,7 @@ using ElementalPastGame.Items.Equipment.Weapons;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.Rendering;
 using ElementalPastGame.Rendering.Utility;
+using ElementalPastGame.SpacesManagement.Spaces;
 using ElementalPastGame.TileManagement.Utility;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Windows.Forms.Design.AxImporter;
@@ -69,7 +70,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
         internal DateTime lastEnemySelectionInputTime;
         internal double timeSinceLastEnemySelectionMove;
 
-        public BattleGameStateHandler(Inventory inventory, List<EntityBattleModel> allies, long encounterID)
+        public BattleGameStateHandler(ISpace space, Inventory inventory, List<EntityBattleModel> allies, long encounterID)
         {
             state = BattleState.Start;
             this.inventory = inventory;
@@ -77,7 +78,7 @@ namespace ElementalPastGame.GameStateManagement.GameStateHandlers.Battle
             this.encounterID = encounterID;
             // The battle game state handler needs to be aware of the encounterID so it can pass it back in to the 
             // overworld state handler at the end of the battle.
-            this.enemies = ActiveEntityManager.GetInstance().enemiesForEncounterID(encounterID);
+            this.enemies = space.enemiesForEncounterID(encounterID);
             if (enemies.Count == 0)
             {
                 throw new ArgumentException("Battle must be created with at least 1 enemy.");

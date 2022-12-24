@@ -6,13 +6,14 @@ using ElementalPastGame.Items.Equipment.Weapons;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
+using ElementalPastGame.SpacesManagement.Spaces;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 
 namespace ElementalPastGame.GameStateManagement
 {
-    public class GameObjectManager : IGameObjectManager, IKeyEventSubscriber, IGameStateHandlerDelegate
+    public class GameStateManager : IGameObjectManager, IKeyEventSubscriber, IGameStateHandlerDelegate
     {
-        internal static GameObjectManager? _instance;
+        internal static GameStateManager? _instance;
         internal IPictureBoxManager pictureBoxManager;
 
         internal IGameStateHandler overworldGameStateHandler = OverworldGameStateHandler.getInstance();
@@ -28,11 +29,11 @@ namespace ElementalPastGame.GameStateManagement
                 return _instance;
             }
 
-            _instance = new GameObjectManager(PictureBoxManager.GetInstance());
+            _instance = new GameStateManager(PictureBoxManager.GetInstance());
             return _instance;
         }
 
-        internal GameObjectManager(IPictureBoxManager pictureBoxManager)
+        internal GameStateManager(IPictureBoxManager pictureBoxManager)
         {
             this.currentGameStateHandler = this.overworldGameStateHandler;
             this.currentGameStateHandler.gameStateHandlerDelegate = this;
@@ -82,12 +83,20 @@ namespace ElementalPastGame.GameStateManagement
                     this.currentGameStateHandler = this.overworldGameStateHandler;
                     break;
                 case GameState.Battle:
-                    Object encounterIDObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.ENCOUNTER_ID_KEY);
+                    Object? encounterIDObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.ENCOUNTER_ID_KEY);
                     long encounterID = -1;
                     if (encounterIDObject != null)
                     {
                         encounterID = (long)encounterIDObject;
                     }
+
+                    Object? spaceObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.SPACE_KEY);
+                    ISpace space = Spaces.Overworld;
+                    if (spaceObject != null && spaceObject != Spaces.Overworld)
+                    {
+                        space = (ISpace)spaceObject;
+                    }
+
                     EntityBattleModel swordBattleModel = new EntityBattleModel(EntityType.Aendon, 4);
                     ActiveEquipment swordActiveEquipment = new ActiveEquipment();
                     swordActiveEquipment.weapon = new WoodSword();
@@ -99,7 +108,7 @@ namespace ElementalPastGame.GameStateManagement
                     daggerBattleModel.activeEquipment = daggerActiveEquipment;
 
                     List<EntityBattleModel> allies = new() { swordBattleModel, daggerBattleModel };
-                    this.currentGameStateHandler = new BattleGameStateHandler(Inventory.DebugInventory(), allies, encounterID);
+                    this.currentGameStateHandler = new BattleGameStateHandler(space, Inventory.DebugInventory(), allies, encounterID);
                     break;
             }
 

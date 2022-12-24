@@ -1,4 +1,7 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.Enemies;
+using ElementalPastGame.GameObject.Entities;
+using ElementalPastGame.GameObject;
 using ElementalPastGame.TileManagement.TileTemplates;
 using ElementalPastGame.TileManagement.Utility;
 using System;
@@ -6,146 +9,50 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ElementalPastGame.GameObject.IGameObjectModel;
 using static ElementalPastGame.TileManagement.TileTemplates.TileFactory;
 
-namespace ElementalPastGame.TileManagement
+namespace ElementalPastGame.SpacesManagement.Spaces
 {
-    public class TileMapManager : ITileMapManager
+    public class OverworldSpace : Space, ISpace
     {
-        internal static ITileMapManager? _instance;
 
-        internal ITile[,] TileArray = new ITile[CommonConstants.MAX_MAP_TILE_DIMENSION, CommonConstants.MAX_MAP_TILE_DIMENSION];
-
-        public static ITileMapManager GetInstance()
+        public OverworldSpace () : base(CommonConstants.MAX_MAP_TILE_DIMENSION, CommonConstants.MAX_MAP_TILE_DIMENSION, CommonConstants.GAME_START_LOCATION.X, CommonConstants.GAME_START_LOCATION.Y)
         {
-            if (_instance != null)
-            {
-                return _instance;
-            }
-
-            _instance = new TileMapManager();
-            return _instance;
         }
 
-        public TileMapManager()
+        internal override void SetUpSpace()
         {
             this.SetUpStartingRegion();
             this.SetUpFirstTown();
         }
 
-        public void LoadTileChunk(int leftX, int topY, int rightX, int bottomY)
+        internal void SetUpStartingRegion()
         {
-            for (int YIndex = topY; YIndex <= bottomY; YIndex++)
-            {
-                for (int XIndex = leftX; XIndex <= rightX; XIndex++)
-                {
-                    ITile tile = TileArray[XIndex, YIndex];
-                    if (tile != null) {
-                        tile.Load();
-                        // Central is a higher load status than loaded, so we don't downgrade on a load
-                        if (tile.TileLoadState != TileLoadState.Central) {
-                            tile.TileLoadState = TileLoadState.Loaded;
-                        }
-                    }
-                }
-            }   
+            this.SetUpStartingRegionEntities();
+            this.SetUpStartingRegionMap();
         }
 
-        public void UnloadTileChunk(int leftX, int topY, int rightX, int bottomY)
+        internal void SetUpStartingRegionEntities()
         {
-            for (int YIndex = topY; YIndex <= bottomY; YIndex++)
-            {
-                for (int XIndex = leftX; XIndex <= rightX; XIndex++)
-                {
-                    ITile tile = TileArray[XIndex, YIndex];
-                    if (tile != null) {
-                        tile.Unload();
-                        tile.TileLoadState = TileLoadState.Unloaded;
-                    }
-                }
-            }
-        }
+            IGameObjectModel goblin1 = new Goblin(this, 890, 900);
+            goblin1.movementType = MovementType.Aggressive;
+            List<EntityBattleModel> goblin1EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5), new EntityBattleModel(EntityType.Goblin, 5) };
+            this.RegisterGameObject(goblin1, goblin1EncounterList);
 
-        public ITile TileAt(int X, int Y)
-        {
-            // TODO: remove debug code
-            ITile tile = TileArray[X, Y];
-            return TileArray[X, Y];
-        }
-
-        public void MarkTileChunkCentral(int leftX, int topY, int rightX, int bottomY)
-        {
-            for (int YIndex = topY; YIndex <= bottomY; YIndex++)
-            {
-                for (int XIndex = leftX; XIndex <= rightX; XIndex++)
-                {
-                    ITile tile = TileArray[XIndex, YIndex];
-                    if (tile.TileLoadState == TileLoadState.Unloaded)
-                    {
-                        tile.Load();
-                    }
-                    tile.TileLoadState = TileLoadState.Central;
-                }
-            }
-        }
-
-        internal void SetTileAtLocation(ITile Tile, int X, int Y)
-        {
-            this.TileArray[X, Y] = Tile;
-            Tile.TileModelID = "Tile " + X + " " + Y;
-        }
-
-        internal void SetChunkToTile(ITile tile, int leftX, int topY, int rightX, int bottomY)
-        {
-            for (int tileXIndex = leftX; tileXIndex <= rightX; tileXIndex++)
-            {
-                for (int tileYIndex = topY; tileYIndex <= bottomY; tileYIndex++)
-                {
-                    this.SetTileAtLocation(tile, tileXIndex, tileYIndex);
-                }
-            }
-        }
-
-        //internal void SetBushyTree(String backgroundName, int x, int y)
-        //{
-        //    Tile[] bushyTreeTiles = TileFactory.BushyTreeWithBackground(backgroundName);
-        //    this.SetTileAtLocation(bushyTreeTiles[0], x + 1, y + 1);
-        //    this.SetTileAtLocation(bushyTreeTiles[1], x, y + 1);
-        //    this.SetTileAtLocation(bushyTreeTiles[2], x + 1, y);
-        //    this.SetTileAtLocation(bushyTreeTiles[3], x , y);
-        //}
-
-        internal void SetImageOnTiles(String foregroundImageName, String backgroundImageName, int x, int y, int width, int height, bool isCollidable)
-        {
-            Tile[] tiles = TileFactory.TilesForImage(foregroundImageName, backgroundImageName, width, height, isCollidable);
-            for (int xIndex = 0; xIndex < width; xIndex++)
-            {
-                for (int yIndex = 0; yIndex < height; yIndex++)
-                {
-                    this.SetTileAtLocation(tiles[yIndex * width + xIndex], x + (width - xIndex - 1), y + (height - yIndex - 1));
-                }
-            }
-        }
-
-        internal void SetChunkToImage(String foregroundImageName, String backgroundImageName, 
-                                      int imageTileWidth, int imageTileHeight, 
-                                      int rightX, int bottomY, 
-                                      int leftX, int topY, 
-                                      bool isCollidable)
-        {
-            for(int xIndex = rightX; xIndex <= leftX; xIndex += imageTileWidth)
-            {
-                for (int yIndex = bottomY; yIndex <= topY; yIndex += imageTileHeight)
-                {
-                    SetImageOnTiles(foregroundImageName, backgroundImageName, xIndex, yIndex, imageTileWidth, imageTileHeight, isCollidable);
-                }
-            }
+            IGameObjectModel goblin2 = new Goblin(this, 860, 915);
+            //List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
+            //goblin1.shouldCycleMoves = true;
+            //goblin1.Moves = goblin1Moves;
+            goblin2.movementType = MovementType.Wander;
+            List<EntityBattleModel> goblin2EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5) };
+            this.RegisterGameObject(goblin2, goblin2EncounterList);
         }
 
         // Map setups
 
         // Route 1: (820, 890) -> (910, 920)
-        internal void SetUpStartingRegion()
+        internal void SetUpStartingRegionMap()
         {
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Grass), 700, 700, 999, 999);
 
@@ -246,8 +153,19 @@ namespace ElementalPastGame.TileManagement
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Dirt), 814, 890, 816, 913);
         }
 
-        // First town: (830, 790) -> (730, 890)
         internal void SetUpFirstTown()
+        {
+            this.SetUpFirstTownMap();
+            this.SetUpFirstTownEntities();
+        }
+
+        internal void SetUpFirstTownEntities()
+        {
+
+        }
+
+        // First town: (830, 790) -> (730, 890)
+        internal void SetUpFirstTownMap()
         {
 
             // Fence 1a

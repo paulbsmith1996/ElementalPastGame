@@ -9,9 +9,6 @@ namespace ElementalPastGame.TileManagement
 {
     public interface IActiveTileSetManager
     {
-        public static IActiveTileSetManager GetInstance() => throw new NotImplementedException();
         public void Update(int PreviousCenterX, int PreviousCenterY, int CenterX, int CenterY, bool isAnimating, double offset);
-
-        public bool isTileCollidable(int x, int y);
     }
 }

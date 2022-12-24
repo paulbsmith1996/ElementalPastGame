@@ -19,11 +19,13 @@ namespace ElementalPastGame.GameObject.EntityManagement
         /// <returns></returns>
         public List<IGameObjectModel> GetActiveEntities(int CenterX, int CenterY);
 
-        public void RemoveGameObjectFromLocation(IGameObjectModel gameObjectModel, Location location);
-        public void AddGameObjectToLocation(IGameObjectModel gameObjectModel, Location location);
+        public void RegisterGameObject(IGameObjectModel gameObjectModel, List<EntityBattleModel> encounterEnemies);
+
+        public void MoveGameObject(IGameObjectModel gameObjectModel, Location fromLocation, Location toLocation);
 
         public void MarkEntityIDDead(long entityID);
 
         public List<EntityBattleModel> enemiesForEncounterID(long encounterID);
+        public void Unload();
     }
 }

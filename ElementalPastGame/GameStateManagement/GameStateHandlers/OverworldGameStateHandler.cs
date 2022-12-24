@@ -12,6 +12,7 @@ using ElementalPastGame.KeyInput;
 using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 using ElementalPastGame.GameStateManagement;
 using ElementalPastGame.GameObject.EntityManagement;
+using ElementalPastGame.SpacesManagement.Spaces;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
@@ -19,8 +20,6 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
     {
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
         internal static OverworldGameStateHandler? _instance;
-        internal IActiveTileSetManager activeTileSetManager;
-        internal IActiveEntityManager activeEntityManager;
 
         internal bool _isAnimating;
         public bool isAnimating { get { return _isAnimating; } set { _isAnimating = value; } }
@@ -32,7 +31,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public int FramesAnimated { get; set; }
 
-        internal static ITileMapManager TextureMapManager = TileMapManager.GetInstance();
+        internal ISpace space = Spaces.Overworld;
 
         internal RenderingModel playerRenderingModel;
 
@@ -55,9 +54,6 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             this.PreviousCenterY = this.CenterY;
 
             this.isAnimating = false;
-            this.activeTileSetManager = ActiveTileSetManager.GetInstance();
-
-            this.activeEntityManager = ActiveEntityManager.GetInstance();
 
             // TODO: this is suppoed to represent the player so def move it out of here
             Bitmap playerBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Player], CommonConstants.TILE_DIMENSION, CommonConstants.TILE_DIMENSION);
@@ -78,7 +74,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public Boolean ValidateNewGameObjectPosition(IGameObjectModel gameObject, Location newLocation)
         {
-            return !this.activeTileSetManager.isTileCollidable(newLocation.X, newLocation.Y);
+            return this.space.LocationIsNavigable(newLocation.X, newLocation.Y);
         }
 
         public void HandleKeyPressed(char keyChar)
@@ -144,14 +140,15 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         internal void UpdateGameState ()
         {
-            foreach (IGameObjectModel gameObjectModel in this.activeEntityManager.GetActiveEntities(this.CenterX, this.CenterY))
+            foreach (IGameObjectModel gameObjectModel in this.space.GetActiveEntities(this.CenterX, this.CenterY))
             {
                 if (gameObjectModel.Location.X == this.CenterX && gameObjectModel.Location.Y == this.CenterY)
                 {
                     if (this.gameStateHandlerDelegate != null)
                     {
                         this.MoveObjectAwayFromCenter(gameObjectModel);
-                        Dictionary<String, Object> transitionDictionary = new Dictionary<String, Object>() { { GameStateTransitionConstants.ENCOUNTER_ID_KEY, gameObjectModel.EntityID} };
+                        Dictionary<String, Object> transitionDictionary = new Dictionary<String, Object>() { { GameStateTransitionConstants.ENCOUNTER_ID_KEY, gameObjectModel.EntityID },
+                                                                                                             { GameStateTransitionConstants.SPACE_KEY, this.space } };
                         ((IGameStateHandlerDelegate)this.gameStateHandlerDelegate).IGameStateHandlerNeedsGameStateUpdate(this, GameState.Battle, transitionDictionary);
                     }
                     return;
@@ -220,13 +217,13 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             switch (key)
             {
                 case Keys.Left:
-                    return this.ValidateNewLocation(this.CenterX + 1, this.CenterY);
+                    return this.space.LocationIsNavigable(this.CenterX + 1, this.CenterY);
                 case Keys.Right:
-                    return this.ValidateNewLocation(this.CenterX - 1, this.CenterY);
+                    return this.space.LocationIsNavigable(this.CenterX - 1, this.CenterY);
                 case Keys.Up:
-                    return this.ValidateNewLocation(this.CenterX, this.CenterY + 1);
+                    return this.space.LocationIsNavigable(this.CenterX, this.CenterY + 1);
                 case Keys.Down:
-                    return this.ValidateNewLocation(this.CenterX, this.CenterY - 1);
+                    return this.space.LocationIsNavigable(this.CenterX, this.CenterY - 1);
             }
 
             return true;
@@ -235,7 +232,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal void UpdateBackgroundWithOffset(double offset)
         {
             DateTime startUpdateBackground = DateTime.Now;
-            this.activeTileSetManager.Update(this.PreviousCenterX, this.PreviousCenterY, this.CenterX, this.CenterY, this.isAnimating, offset);
+            this.space.UpdateActiveTileSet(this.PreviousCenterX, this.PreviousCenterY, this.CenterX, this.CenterY, this.isAnimating, offset);
             DateTime endTileSetUpdate = DateTime.Now;
 
             this.UpdateBitmapForRenderingModelForNonnullDelegate(this.playerRenderingModel);
@@ -250,7 +247,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         internal void UpdateForegroundWithOffset(double animationXOffset, double animationYOffset)
         {
             DateTime startUpdateForeground = DateTime.Now;
-            foreach (IGameObjectModel gameObjectModel in this.activeEntityManager.GetActiveEntities(this.CenterX, this.CenterY))
+            foreach (IGameObjectModel gameObjectModel in this.space.GetActiveEntities(this.CenterX, this.CenterY))
             {
                 gameObjectModel.UpdateModelForNewRunloop();
                 RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, animationXOffset, animationYOffset);
@@ -259,17 +256,6 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             DateTime endUpdateForeground = DateTime.Now;
             double timeToUpdateForeground = (endUpdateForeground - startUpdateForeground).TotalMilliseconds;
             Console.WriteLine(timeToUpdateForeground);
-        }
-
-        internal Boolean ValidateNewLocation(int X, int Y)
-        {
-            ITile newTile = TextureMapManager.TileAt(X, Y);
-            if (newTile == null)
-            {
-                return true;
-            }
-
-            return !newTile.isCollidable;
         }
 
         internal RenderingModel CreateRenderingModelForGameObject(IGameObjectModel gameObjectModel, double animationXOffset, double animationYOffset)
@@ -324,7 +310,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                         Object entityIDObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.ENCOUNTER_ID_KEY);
                         if (entityIDObject != null)
                         {
-                            this.activeEntityManager.MarkEntityIDDead((long)entityIDObject);
+                            this.space.MarkEntityIDDead((long)entityIDObject);
                         }
                     }
                     break;

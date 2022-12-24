@@ -4,6 +4,7 @@ using ElementalPastGame.GameObject.EntityManagement;
 using ElementalPastGame.GameObject.GameStateHandlers;
 using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.Rendering;
+using ElementalPastGame.SpacesManagement.Spaces;
 using ElementalPastGame.TileManagement.Utility;
 using System;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace ElementalPastGame.GameObject
 {
     public partial class GameObjectModel : IGameObjectModel
     {
+        internal ISpace space;
         public Location Location { get; set; }
         public GameObjectSize Size { get; set; }
 
@@ -36,8 +38,9 @@ namespace ElementalPastGame.GameObject
 
         internal Random rng = new Random();
 
-        public GameObjectModel(EntityType type, int X, int Y, MovementType movementType = MovementType.Wander)
+        public GameObjectModel(EntityType type, ISpace space, int X, int Y, MovementType movementType = MovementType.Wander)
         {
+            this.space = space;
             this.movementType = movementType;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
@@ -80,10 +83,8 @@ namespace ElementalPastGame.GameObject
                 return;
             }
 
-            IActiveEntityManager activeEntityManager = ActiveEntityManager.GetInstance();
-            activeEntityManager.RemoveGameObjectFromLocation(this, previousLocation);
             this.Location = newLocation;
-            activeEntityManager.AddGameObjectToLocation(this, newLocation);
+            this.space.MoveGameObject(this, previousLocation, newLocation);
         }
 
         public void UpdateModelForNewRunloop()

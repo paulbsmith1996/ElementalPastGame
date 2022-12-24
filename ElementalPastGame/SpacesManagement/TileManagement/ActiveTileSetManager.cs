@@ -2,6 +2,7 @@
 using ElementalPastGame.GameObject;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
+using ElementalPastGame.SpacesManagement.TileManagement.TileMapManagers;
 using ElementalPastGame.TileManagement.Utility;
 using System;
 using System.Collections.Generic;
@@ -22,17 +23,6 @@ namespace ElementalPastGame.TileManagement
         internal IPictureBoxManager pictureBoxManager;
 
         internal static IActiveTileSetManager? _instance;
-
-        public static IActiveTileSetManager GetInstance()
-        {
-            if (_instance != null)
-            {
-                return _instance;
-            }
-
-            _instance = new ActiveTileSetManager(PictureBoxManager.GetInstance(), TileMapManager.GetInstance(), CommonConstants.GAME_START_LOCATION.X, CommonConstants.GAME_START_LOCATION.Y);
-            return _instance;
-        }
         
         /// <summary>
         /// TODO: Remove the dependency on GameObjectManager from this class entirely. It's causing waaaayyyy to many headaches.
@@ -100,17 +90,6 @@ namespace ElementalPastGame.TileManagement
             //        break;
             //}
             this.UpdateRenderingModels(CenterX, CenterY, PreviousCenterX, PreviousCenterY, isAnimating, offset);
-        }
-
-        public bool isTileCollidable(int x, int y)
-        {
-            ITile newTile = this.MapManager.TileAt(x, y);
-            if (newTile == null)
-            {
-                return true;
-            }
-
-            return newTile.isCollidable;
         }
 
         internal void RelabelCenterChunk(int CenterX, int CenterY)

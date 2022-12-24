@@ -4,6 +4,7 @@ using ElementalPastGame.GameObject.Utility;
 using ElementalPastGame.GameStateManagement;
 using ElementalPastGame.Items.Inventory;
 using ElementalPastGame.KeyInput;
+using ElementalPastGame.SpacesManagement.Spaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +28,7 @@ namespace ElementalPastGame.GameObject
             _instance = new PlayerModel();
             return _instance;
         }
-        public PlayerModel() : base(EntityType.Aendon, 10, 0, 0)
+        public PlayerModel() : base(EntityType.Aendon, Spaces.Overworld, 10, 0, 0)
         {
             inventory = new Inventory();
         }

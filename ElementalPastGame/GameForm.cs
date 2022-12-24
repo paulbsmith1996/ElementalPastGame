@@ -22,7 +22,7 @@ namespace ElementalPastGame
             this.Controls.Add(pictureBox);
             this.pictureBoxManager.AddIPictureBoxManagerObserver(this);
             // TODO: should be able to remove this line later. Just need it to start up the Player model here
-            GameObjectManager.getInstance();
+            GameStateManager.getInstance();
         }
 
         // Key Interpretation

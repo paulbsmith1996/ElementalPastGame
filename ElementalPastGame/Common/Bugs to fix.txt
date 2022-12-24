@@ -7,3 +7,6 @@ Overworld:
 Battle:
 1) When the move resolution info display pops up for the enemy, it is occasionally "laggy" and doesn't get the first few key taps for some reason
 2) Enemies do not have any move selection programmed yet, therefore they think they are using the same move as the previous allied entity battle model.
+
+Infrastructure:
+1) Multiple sources of truth for an entity's location. Gotta fix that in the active entity manager.

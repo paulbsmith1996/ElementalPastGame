@@ -16,16 +16,29 @@ namespace ElementalPastGame.SpacesManagement.Spaces
     public abstract class Space : ISpace
     {
 
+        public int initialX { get; set; }
+        public int initialY { get; set; }
+
+        internal bool padded;
+
         internal IActiveEntityManager activeEntityManager;
         internal ITileMapManager tileMapManager;
         internal IActiveTileSetManager tileSetManager;
 
-        public Space(int spaceWidth, int spaceHeight, int initialX, int initialY)
+        public Space(int spaceWidth, int spaceHeight, int initialX, int initialY, bool padded=false)
         {
+            this.initialX = initialX;
+            this.initialY = initialY;
             this.activeEntityManager = new ActiveEntityManager();
             this.tileMapManager = new TileMapManager(spaceWidth, spaceHeight);
             this.SetUpSpace();
-            this.tileSetManager = new ActiveTileSetManager(PictureBoxManager.GetInstance(), tileMapManager, initialX, initialY);
+            this.tileSetManager = new ActiveTileSetManager(PictureBoxManager.GetInstance(), tileMapManager, initialX, initialY, spaceWidth, spaceHeight);
+            this.padded = padded;
+        }
+
+        public bool isPadded()
+        {
+            return this.padded;
         }
 
         // Override to set up custom space
@@ -64,6 +77,11 @@ namespace ElementalPastGame.SpacesManagement.Spaces
         public List<EntityBattleModel> enemiesForEncounterID(long encounterID)
         {
             return this.activeEntityManager.enemiesForEncounterID(encounterID);
+        }
+
+        public ITile GetTileAt(int x, int y)
+        {
+            return this.tileMapManager.TileAt(x, y);
         }
 
         public void UpdateActiveTileSet(int PreviousCenterX, int PreviousCenterY, int CenterX, int CenterY, bool isAnimating, double offset)

@@ -14,6 +14,10 @@ namespace ElementalPastGame.SpacesManagement.Spaces
 {
     public interface ISpace
     {
+        public int initialX { get; set; }
+        public int initialY { get; set; }
+
+        public bool isPadded();
 
         public bool LocationIsNavigable(int x, int y);
         /// <summary>
@@ -29,6 +33,8 @@ namespace ElementalPastGame.SpacesManagement.Spaces
         public void MarkEntityIDDead(long entityID);
 
         public List<EntityBattleModel> enemiesForEncounterID(long encounterID);
+
+        public ITile GetTileAt(int x, int y);
 
         public void UpdateActiveTileSet(int PreviousCenterX, int PreviousCenterY, int CenterX, int CenterY, bool isAnimating, double offset);
 

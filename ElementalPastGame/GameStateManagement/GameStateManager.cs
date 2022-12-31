@@ -91,8 +91,8 @@ namespace ElementalPastGame.GameStateManagement
                     }
 
                     Object? spaceObject = transitionDictionary.GetValueOrDefault(GameStateTransitionConstants.SPACE_KEY);
-                    ISpace space = Spaces.Overworld;
-                    if (spaceObject != null && spaceObject != Spaces.Overworld)
+                    ISpace space = Spaces.SpaceForIdentity(Spaces.OVERWORLD);
+                    if (spaceObject != null && spaceObject != Spaces.SpaceForIdentity(Spaces.OVERWORLD))
                     {
                         space = (ISpace)spaceObject;
                     }

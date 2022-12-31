@@ -13,7 +13,7 @@ namespace ElementalPastGame.Rendering
     public class PictureBoxManager : IPictureBoxManager
     {
         internal Dictionary<String, Bitmap> bitmapsByRenderingModelIDs = new Dictionary<String, Bitmap>();
-       
+
         internal Bitmap _activeScene = new((2 * CommonConstants.TILE_VIEW_DISTANCE + 1) * CommonConstants.TILE_DIMENSION, (2 * CommonConstants.TILE_VIEW_DISTANCE + 1) * CommonConstants.TILE_DIMENSION);
 
         public Bitmap ActiveScene => _activeScene;
@@ -53,9 +53,14 @@ namespace ElementalPastGame.Rendering
         public void UpdateBitmapForIRenderingModel(RenderingModel renderingModel)
         {
             // TODO: need to have an erase type result for passing in a null bitmap
-            if (renderingModel.Bitmaps.Count > 0)
+            if (renderingModel.Bitmaps != null && renderingModel.Bitmaps.Count > 0)
             {
                 this.RedrawActiveBitmap(renderingModel.Bitmaps, renderingModel.X, renderingModel.Y);
+            }
+
+            if (renderingModel.BackgroundColor != null)
+            {
+                this.DrawBackgroundColorForRenderingModel(renderingModel);
             }
         }
 
@@ -67,6 +72,14 @@ namespace ElementalPastGame.Rendering
                 {
                     graphics.DrawImage(bitmap, x, y);
                 }
+            }
+        }
+
+        internal void DrawBackgroundColorForRenderingModel(RenderingModel renderingModel)
+        {
+            using (Graphics graphics = Graphics.FromImage(this._activeScene))
+            {
+                graphics.FillRectangle(new SolidBrush((Color)renderingModel.BackgroundColor), renderingModel.X, renderingModel.Y, renderingModel.X + renderingModel.Width, renderingModel.Y + renderingModel.Height);
             }
         }
     }

@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using static ElementalPastGame.GameObject.IGameObjectModel;
 using static ElementalPastGame.TileManagement.TileTemplates.TileFactory;
+using ElementalPastGame.TileManagement;
+using ElementalPastGame.SpacesManagement.TileManagement;
 
 namespace ElementalPastGame.SpacesManagement.Spaces
 {
@@ -186,7 +188,8 @@ namespace ElementalPastGame.SpacesManagement.Spaces
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.CornerBR), 820, 881);
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.Horizontal), 821, 881, 880, 881);
 
-
+            // House 1
+            this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseDoor, Spaces.HOUSE_1, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1), 815, 874);
         }
     }
 }

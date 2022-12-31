@@ -23,6 +23,8 @@ namespace ElementalPastGame.TileManagement
         internal IPictureBoxManager pictureBoxManager;
 
         internal static IActiveTileSetManager? _instance;
+
+        internal RenderingModel backgroundRenderingModel;
         
         /// <summary>
         /// TODO: Remove the dependency on GameObjectManager from this class entirely. It's causing waaaayyyy to many headaches.
@@ -31,7 +33,7 @@ namespace ElementalPastGame.TileManagement
         /// <param name="tileMapManager"></param>
         /// <param name="CenterX"></param>
         /// <param name="CenterY"></param>
-        public ActiveTileSetManager(IPictureBoxManager pictureBoxManager, ITileMapManager tileMapManager, int CenterX, int CenterY)
+        public ActiveTileSetManager(IPictureBoxManager pictureBoxManager, ITileMapManager tileMapManager, int CenterX, int CenterY, int spaceWidth, int spaceHeight)
         {
             this.pictureBoxManager = pictureBoxManager;
             this.MapManager = tileMapManager;
@@ -41,7 +43,7 @@ namespace ElementalPastGame.TileManagement
             //                              CenterY - LoadRadius,
             //                              CenterX + LoadRadius,
             //                              CenterY + LoadRadius);
-            this.MapManager.LoadTileChunk(0, 0, CommonConstants.MAX_MAP_TILE_DIMENSION - 1, CommonConstants.MAX_MAP_TILE_DIMENSION - 1);
+            this.MapManager.LoadTileChunk(0, 0, spaceWidth - 1, spaceHeight - 1);
             this.RelabelCenterChunk(CenterX, CenterY);
             this.UpdateRenderingModels(CenterX, CenterY, CenterX, CenterY, false, 0);
         }
@@ -99,14 +101,27 @@ namespace ElementalPastGame.TileManagement
 
         internal void UpdateRenderingModels(int CenterX, int CenterY, int PreviousCenterX, int PreviousCenterY, bool isAnimating, double offset)
         {
+            RenderingModel background = new()
+            {
+                X = 0,
+                Y = 0,
+                Width = CommonConstants.GAME_DIMENSION,
+                Height = CommonConstants.GAME_DIMENSION,
+                BackgroundColor = Color.Black,
+            };
+            this.pictureBoxManager.UpdateBitmapForIRenderingModel(background);
 
             for (int X = CenterX - CommonConstants.TILE_VIEW_DISTANCE - 1; X <= CenterX + CommonConstants.TILE_VIEW_DISTANCE + 1; X++) {
                 for (int Y = CenterY - CommonConstants.TILE_VIEW_DISTANCE - 1; Y <= CenterY + CommonConstants.TILE_VIEW_DISTANCE + 1; Y++)
                 {
                     ITile tileToRender = this.MapManager.TileAt(X, Y);
-                    if (tileToRender.TileLoadState != TileLoadState.Loaded)
+                    if (tileToRender != null && tileToRender.TileLoadState != TileLoadState.Loaded)
                     {
                         tileToRender.Load();
+                    }
+                    if (tileToRender == null)
+                    {
+                        continue;
                     }
                     RenderingModel tileRenderingModel = this.RenderingModelForTile(tileToRender, X, Y, CenterX, CenterY, PreviousCenterX, PreviousCenterY, offset, isAnimating);
                     this.pictureBoxManager.UpdateBitmapForIRenderingModel(tileRenderingModel);
@@ -127,18 +142,7 @@ namespace ElementalPastGame.TileManagement
 
             if (Tile == null)
             {
-                Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION + 1, CommonConstants.TILE_DIMENSION + 1);
-                List<Bitmap> blankBitmapList = new();
-                blankBitmapList.Add(BlankBitmap);
-                RenderingModel templateModel = new()
-                {
-                    X = (int)(tileXLocation * CommonConstants.TILE_DIMENSION),
-                    Y = (int)(tileYLocation * CommonConstants.TILE_DIMENSION),
-                    Width = CommonConstants.TILE_DIMENSION + 1,
-                    Height = CommonConstants.TILE_DIMENSION + 1,
-                    Bitmaps = blankBitmapList,
-                };
-                return templateModel;
+                return this.blankRenderingModel(tileXLocation, tileYLocation);
             }
 
             RenderingModel renderingModel = new()
@@ -161,6 +165,22 @@ namespace ElementalPastGame.TileManagement
             }
 
             return tile.TileLoadState;
+        }
+
+        internal RenderingModel blankRenderingModel(double x, double y)
+        {
+            Bitmap BlankBitmap = new Bitmap(TextureMapping.Mapping[TextureMapping.Blank], CommonConstants.TILE_DIMENSION + 1, CommonConstants.TILE_DIMENSION + 1);
+            List<Bitmap> blankBitmapList = new();
+            blankBitmapList.Add(BlankBitmap);
+            RenderingModel templateModel = new()
+            {
+                X = (int)(x * CommonConstants.TILE_DIMENSION),
+                Y = (int)(y * CommonConstants.TILE_DIMENSION),
+                Width = CommonConstants.TILE_DIMENSION + 1,
+                Height = CommonConstants.TILE_DIMENSION + 1,
+                Bitmaps = blankBitmapList,
+            };
+            return templateModel;
         }
     }
 }

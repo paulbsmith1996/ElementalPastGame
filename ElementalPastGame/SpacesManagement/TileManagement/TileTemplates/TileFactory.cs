@@ -1,4 +1,6 @@
-﻿using ElementalPastGame.TileManagement.Utility;
+﻿using ElementalPastGame.SpacesManagement.Spaces;
+using ElementalPastGame.SpacesManagement.TileManagement;
+using ElementalPastGame.TileManagement.Utility;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -55,6 +57,13 @@ namespace ElementalPastGame.TileManagement.TileTemplates
             List<String> imageNames = new List<string>();
             imageNames.Add(BackgroundName);
             return new Tile(imageNames, isCollidable);
+        }
+
+        public static PortalTile PortalTileWithBackground(String BackgroundName, String portalSpaceIdentity, int portalX, int portalY)
+        {
+            List<String> imageNames = new List<string>();
+            imageNames.Add(BackgroundName);
+            return new PortalTile(imageNames, portalSpaceIdentity, portalX, portalY);
         }
 
         public static Tile[] TilesForImage(String foregroundImageName, String backgroundImageName, int width, int height, bool isCollidable)

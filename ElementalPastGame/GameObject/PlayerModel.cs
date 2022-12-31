@@ -28,7 +28,7 @@ namespace ElementalPastGame.GameObject
             _instance = new PlayerModel();
             return _instance;
         }
-        public PlayerModel() : base(EntityType.Aendon, Spaces.Overworld, 10, 0, 0)
+        public PlayerModel() : base(EntityType.Aendon, Spaces.SpaceForIdentity(Spaces.OVERWORLD), 10, 0, 0)
         {
             inventory = new Inventory();
         }

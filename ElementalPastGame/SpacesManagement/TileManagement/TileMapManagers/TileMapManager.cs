@@ -63,6 +63,16 @@ namespace ElementalPastGame.SpacesManagement.TileManagement.TileMapManagers
 
         public ITile TileAt(int X, int Y)
         {
+            if (Y < 0 || Y > TileArray.GetUpperBound(0))
+            {
+                return null;
+            }
+
+            if (X < 0 || X > TileArray.GetUpperBound(1))
+            {
+                return null;
+            }
+
             // TODO: remove debug code
             ITile tile = TileArray[X, Y];
             return TileArray[X, Y];
@@ -72,13 +82,28 @@ namespace ElementalPastGame.SpacesManagement.TileManagement.TileMapManagers
         {
             for (int YIndex = topY; YIndex <= bottomY; YIndex++)
             {
+                if (YIndex < 0 || YIndex > TileArray.GetUpperBound(0))
+                {
+                    continue;
+                }
+
                 for (int XIndex = leftX; XIndex <= rightX; XIndex++)
                 {
+                    if (XIndex < 0 || XIndex > TileArray.GetUpperBound(1))
+                    {
+                        continue;
+                    }
                     ITile tile = TileArray[XIndex, YIndex];
+                    if (tile == null)
+                    {
+                        continue;
+                    }
+
                     if (tile.TileLoadState == TileLoadState.Unloaded)
                     {
                         tile.Load();
                     }
+
                     tile.TileLoadState = TileLoadState.Central;
                 }
             }

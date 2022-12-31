@@ -13,6 +13,7 @@ using static ElementalPastGame.GameStateManagement.IGameObjectManager;
 using ElementalPastGame.GameStateManagement;
 using ElementalPastGame.GameObject.EntityManagement;
 using ElementalPastGame.SpacesManagement.Spaces;
+using ElementalPastGame.SpacesManagement.TileManagement;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
@@ -31,7 +32,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public int FramesAnimated { get; set; }
 
-        internal ISpace space = Spaces.Overworld;
+        internal ISpace space = Spaces.SpaceForIdentity(Spaces.OVERWORLD);
 
         internal RenderingModel playerRenderingModel;
 
@@ -107,6 +108,15 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 this.UpdateForegroundWithOffset(animationXOffset, animationYOffset);
                 this.RedrawForNonnullDelegate();
                 return;
+            }
+
+            if (this.space.GetTileAt(this.CenterX, this.CenterY) is PortalTile portalTile)
+            {
+                this.space = Spaces.SpaceForIdentity(portalTile.portalSpaceIdentity);
+                this.CenterX = portalTile.portalX;
+                this.CenterY = portalTile.portalY;
+                this.PreviousCenterX = this.CenterX;
+                this.PreviousCenterY = this.PreviousCenterY;
             }
 
             if (keyCodes.Count > 0)

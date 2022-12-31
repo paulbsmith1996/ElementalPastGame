@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Security.Permissions;
 
 namespace ElementalPastGame.TileManagement.Utility
 {
@@ -48,6 +49,10 @@ namespace ElementalPastGame.TileManagement.Utility
         public static String GrassDirt7 = "Grass_Dirt_7";
         public static String GrassDirt9 = "Grass_Dirt_9";
 
+        public static String HouseDoor = "House_Door";
+        public static String HouseFloor = "House_Floor";
+        public static String HouseMat = "House_Mat";
+
         public static String Player = "Player";
 
         public static String Goblin = "Goblin";
@@ -89,6 +94,10 @@ namespace ElementalPastGame.TileManagement.Utility
             { WaterGrass4, new Bitmap(TexturesLocation + "water_grass_4.png") },
             { WaterGrass6, new Bitmap(TexturesLocation + "water_grass_6.png") },
             { WaterGrass8, new Bitmap(TexturesLocation + "water_grass_8.png") },
+
+            { HouseDoor, new Bitmap(TexturesLocation + "housedoor.png") },
+            { HouseFloor, new Bitmap(TexturesLocation + "floor.png") },
+            { HouseMat, new Bitmap(TexturesLocation + "housemat.png") },
 
             { Goblin, new Bitmap(TexturesLocation + "Goblin.png") },
             { Dead_Goblin, deadGoblin() },

@@ -236,7 +236,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     return this.space.LocationIsNavigable(this.CenterX, this.CenterY - 1);
             }
 
-            return true;
+            return false;
         }
 
         internal void UpdateBackgroundWithOffset(double offset)

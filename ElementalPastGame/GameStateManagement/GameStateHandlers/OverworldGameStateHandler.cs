@@ -152,7 +152,7 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         {
             foreach (IGameObjectModel gameObjectModel in this.space.GetActiveEntities(this.CenterX, this.CenterY))
             {
-                if (gameObjectModel.Location.X == this.CenterX && gameObjectModel.Location.Y == this.CenterY)
+                if (gameObjectModel.Location.X == this.CenterX && gameObjectModel.Location.Y == this.CenterY && gameObjectModel.IsHostile)
                 {
                     if (this.gameStateHandlerDelegate != null)
                     {

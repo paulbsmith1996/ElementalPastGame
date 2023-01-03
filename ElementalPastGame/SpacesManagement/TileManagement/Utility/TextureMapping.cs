@@ -58,6 +58,8 @@ namespace ElementalPastGame.TileManagement.Utility
         public static String Goblin = "Goblin";
         public static String Dead_Goblin = "Dead_Goblin";
 
+        public static String Villager1 = "Villager_1";
+
         public static Dictionary<String, Bitmap> Mapping = new Dictionary<String, Bitmap>() {
             { Blank, new Bitmap(TexturesLocation + "Blank.png") },
             { Dirt, new Bitmap(TexturesLocation + "Dirt.jpg") },
@@ -102,6 +104,8 @@ namespace ElementalPastGame.TileManagement.Utility
             { Goblin, new Bitmap(TexturesLocation + "Goblin.png") },
             { Dead_Goblin, deadGoblin() },
             { Player, new Bitmap(TexturesLocation + "Kitty.png") },
+
+            { Villager1, new Bitmap(TexturesLocation + "malevillager.png") },
         };
 
         public static Bitmap deadGoblin()

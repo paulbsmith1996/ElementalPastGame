@@ -52,7 +52,9 @@ namespace ElementalPastGame.SpacesManagement.Spaces
                 return true;
             }
 
-            return !newTile.isCollidable;
+            bool colliableEntityPresent = this.activeEntityManager.IsCollidableEntityPresent(x, y);
+
+            return !newTile.isCollidable && !colliableEntityPresent;
         }
 
         public List<IGameObjectModel> GetActiveEntities(int CenterX, int CenterY)

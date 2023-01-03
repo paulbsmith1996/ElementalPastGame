@@ -3,6 +3,7 @@ using ElementalPastGame.GameObject.Enemies;
 using ElementalPastGame.GameObject.Entities;
 using System;
 using System.Collections.Generic;
+using System.DirectoryServices.ActiveDirectory;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,10 +50,18 @@ namespace ElementalPastGame.GameObject.EntityManagement
             return activeEntities;
         }
 
+        public bool IsCollidableEntityPresent(int x, int y)
+        {
+            IGameObjectModel? gameObjectModel = EntitiesByLocation.GetValueOrDefault(new Location() { X = x, Y = y});
+            return gameObjectModel != null && gameObjectModel.IsCollidable;
+        }
+
         public void RegisterGameObject(IGameObjectModel gameObjectModel, List<EntityBattleModel> encounterEnemies)
         {
             this.AddEntityToMapping(gameObjectModel);
-            this.RegisterEnemyListForEncounterID(encounterEnemies, gameObjectModel.EntityID);
+            if (encounterEnemies != null && encounterEnemies.Count > 0) {
+                this.RegisterEnemyListForEncounterID(encounterEnemies, gameObjectModel.EntityID);
+            }
         }
 
         public void MoveGameObject(IGameObjectModel gameObjectModel, Location fromLocation, Location toLocation)

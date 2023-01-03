@@ -23,6 +23,8 @@ namespace ElementalPastGame.GameObject
 
         public long EntityID { get; set; }
         public Boolean IsCollidable { get; set; }
+        public bool IsInteractable { get; set; }
+        public bool IsHostile { get; set; }
         public double XAnimationOffset { get; set; }
         public double YAnimationOffset { get; set; }
 
@@ -38,10 +40,25 @@ namespace ElementalPastGame.GameObject
 
         internal Random rng = new Random();
 
-        public GameObjectModel(EntityType type, ISpace space, int X, int Y, MovementType movementType = MovementType.Wander)
+        public GameObjectModel(EntityType type, ISpace space, int X, int Y) : this(type, space, X, Y, MovementType.Wander, false, false)
+        {
+        }
+
+        public GameObjectModel(EntityType type, ISpace space, int X, int Y, MovementType movementType) : this(type, space, X, Y, movementType, false, false)
+        {
+        }
+
+        public GameObjectModel(EntityType type, ISpace space, int X, int Y, bool isCollidable) : this(type, space, X, Y, MovementType.Wander, isCollidable, false)
+        {
+        }
+
+        public GameObjectModel(EntityType type, ISpace space, int X, int Y, MovementType movementType, bool isCollidable, bool isHostile, bool isInteractable=false)
         {
             this.space = space;
             this.movementType = movementType;
+            this.IsCollidable = isCollidable;
+            this.IsInteractable = isInteractable;
+            this.IsHostile = isHostile;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
             this.imageData = new EntityImageData(type);

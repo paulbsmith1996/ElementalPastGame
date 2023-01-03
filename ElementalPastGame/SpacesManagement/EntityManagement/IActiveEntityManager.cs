@@ -19,6 +19,8 @@ namespace ElementalPastGame.GameObject.EntityManagement
         /// <returns></returns>
         public List<IGameObjectModel> GetActiveEntities(int CenterX, int CenterY);
 
+        public bool IsCollidableEntityPresent(int x, int y);
+
         public void RegisterGameObject(IGameObjectModel gameObjectModel, List<EntityBattleModel> encounterEnemies);
 
         public void MoveGameObject(IGameObjectModel gameObjectModel, Location fromLocation, Location toLocation);

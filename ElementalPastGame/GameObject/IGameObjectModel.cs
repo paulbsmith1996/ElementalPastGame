@@ -47,6 +47,8 @@ namespace ElementalPastGame.GameObject
         public GameObjectSize Size { get; set; }
 
         public Boolean IsCollidable { get; set; }
+        public bool IsInteractable { get; set; }
+        public bool IsHostile { get; set; }
 
         /// <summary>
         /// This EntityID must be unique for every GameObject. It is eventually used 

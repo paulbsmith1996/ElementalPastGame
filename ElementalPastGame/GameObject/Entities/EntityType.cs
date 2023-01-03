@@ -9,6 +9,8 @@ namespace ElementalPastGame.GameObject.Entities
     public enum EntityType
     {
         Goblin,
-        Aendon
+        Aendon,
+        Villager1,
+
     }
 }

@@ -1,4 +1,7 @@
 ﻿using ElementalPastGame.Common;
+using ElementalPastGame.GameObject.Enemies;
+using ElementalPastGame.GameObject.Entities;
+using ElementalPastGame.GameObject;
 using ElementalPastGame.TileManagement.TileTemplates;
 using ElementalPastGame.TileManagement.Utility;
 using System;
@@ -6,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static ElementalPastGame.GameObject.IGameObjectModel;
 
 namespace ElementalPastGame.SpacesManagement.Spaces
 {
@@ -22,6 +26,10 @@ namespace ElementalPastGame.SpacesManagement.Spaces
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.HouseFloor), 1, 1, SpaceConstants.HOUSE_WIDTH, SpaceConstants.HOUSE_HEIGHT);
 
             this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseMat, Spaces.OVERWORLD, 815, 873), SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y);
+
+
+            IGameObjectModel villager1 = new GameObjectModel(EntityType.Villager1, this, 5, 6, MovementType.Wander, true, false, true);
+            this.RegisterGameObject(villager1, null);
         }
     }
 }

@@ -37,16 +37,14 @@ namespace ElementalPastGame.SpacesManagement.Spaces
 
         internal void SetUpStartingRegionEntities()
         {
-            IGameObjectModel goblin1 = new Goblin(this, 890, 900);
-            goblin1.movementType = MovementType.Aggressive;
+            IGameObjectModel goblin1 = new Goblin(this, 890, 900, MovementType.Aggressive);
             List<EntityBattleModel> goblin1EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5), new EntityBattleModel(EntityType.Goblin, 5) };
             this.RegisterGameObject(goblin1, goblin1EncounterList);
 
-            IGameObjectModel goblin2 = new Goblin(this, 860, 915);
+            IGameObjectModel goblin2 = new Goblin(this, 860, 915, MovementType.Wander);
             //List<Direction> goblin1Moves = new() { Direction.Up, Direction.None, Direction.None, Direction.Right, Direction.None, Direction.None, Direction.Down, Direction.None, Direction.None, Direction.Left, Direction.None, Direction.None };
             //goblin1.shouldCycleMoves = true;
             //goblin1.Moves = goblin1Moves;
-            goblin2.movementType = MovementType.Wander;
             List<EntityBattleModel> goblin2EncounterList = new() { new EntityBattleModel(EntityType.Goblin, 5) };
             this.RegisterGameObject(goblin2, goblin2EncounterList);
         }

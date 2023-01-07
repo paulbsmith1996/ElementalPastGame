@@ -1,3 +1,4 @@
+using ElementalPastGame.Audio;
 using ElementalPastGame.GameStateManagement;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
@@ -16,6 +17,7 @@ namespace ElementalPastGame
         public GameForm()
         {
             InitializeComponent();
+            AudioLoader.LoadSounds();
             pictureBox = new PictureBox();
             pictureBox.Size = new Size(2000, 2000);
             pictureBox.Location = new Point(10, 10);

@@ -1,13 +1,9 @@
-﻿using ElementalPastGame.Common;
+﻿using ElementalPastGame.Audio;
+using ElementalPastGame.Common;
 using ElementalPastGame.Components;
 using ElementalPastGame.Components.ComponentSequences;
 using ElementalPastGame.KeyInput;
 using ElementalPastGame.Rendering;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ElementalPastGame.GameObject.Entities
 {

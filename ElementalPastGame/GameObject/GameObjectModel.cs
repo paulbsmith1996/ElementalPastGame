@@ -15,7 +15,7 @@ using static ElementalPastGame.GameObject.IGameObjectModel;
 
 namespace ElementalPastGame.GameObject
 {
-    public partial class GameObjectModel : IGameObjectModel
+    public partial class GameObjectModel : IGameObjectModel, IEntityInteractionModelDelegate
     {
         internal ISpace space;
         public Location Location { get; set; }
@@ -23,7 +23,8 @@ namespace ElementalPastGame.GameObject
 
         public long EntityID { get; set; }
         public Boolean IsCollidable { get; set; }
-        public bool IsInteractable { get; set; }
+        public EntityInteractionModel? InteractionModel { get; set; }
+        public IGameObjectModelInteractionDelegate interactionDelegate { get; set; }
         public bool IsHostile { get; set; }
         public double XAnimationOffset { get; set; }
         public double YAnimationOffset { get; set; }
@@ -52,12 +53,17 @@ namespace ElementalPastGame.GameObject
         {
         }
 
-        public GameObjectModel(EntityType type, ISpace space, int X, int Y, MovementType movementType, bool isCollidable, bool isHostile, bool isInteractable=false)
+        public GameObjectModel(EntityType type, ISpace space, int X, int Y, MovementType movementType, bool isCollidable, bool isHostile, EntityInteractionModel? interactionModel=null)
         {
             this.space = space;
+            this.interactionDelegate = this.space;
             this.movementType = movementType;
             this.IsCollidable = isCollidable;
-            this.IsInteractable = isInteractable;
+            this.InteractionModel = interactionModel;
+            if (this.InteractionModel != null)
+            {
+                this.InteractionModel.interactionDelegate = this;
+            }
             this.IsHostile = isHostile;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };
@@ -104,6 +110,28 @@ namespace ElementalPastGame.GameObject
             this.space.MoveGameObject(this, previousLocation, newLocation);
         }
 
+        public void Interact()
+        {
+            if (this.InteractionModel != null)
+            {
+                this.InteractionModel.BeginInteraction();
+            }
+        }
+
+        public void IEntityInteractionModelDidBeginInteraction(IEntityInteractionModel interactionModel)
+        {
+            if (this.interactionDelegate != null) {
+                this.interactionDelegate.IGameObjectModelDidBeginInteraction(this);
+            }
+        }
+
+        public void IEntityInteractionModelDidEndInteraction(IEntityInteractionModel interactionModel)
+        {
+            if (this.interactionDelegate != null) {
+                this.interactionDelegate.IGameObjectModelDidEndInteraction(this);
+            }
+        }
+
         public void UpdateModelForNewRunloop()
         {
             if (!this.isAnimating)
@@ -144,6 +172,8 @@ namespace ElementalPastGame.GameObject
                     break;
                 case MovementType.Wander:
                     this.MakeRandomMove();
+                    break;
+                case MovementType.Still:
                     break;
             }
         }

@@ -27,8 +27,8 @@ namespace ElementalPastGame.SpacesManagement.Spaces
 
             this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseMat, Spaces.OVERWORLD, 815, 873), SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y);
 
-
-            IGameObjectModel villager1 = new GameObjectModel(EntityType.Villager1, this, 5, 6, MovementType.Wander, true, false, true);
+            EntityInteractionModel villagerInteractionModel = new EntityInteractionModel(new List<String>() { "Hello, how are you today?", "I am a villager here in Carroot village.", "I hope you enjoy your stay here." });
+            IGameObjectModel villager1 = new GameObjectModel(EntityType.Villager1, this, 5, 6, MovementType.Still, true, false, villagerInteractionModel);
             this.RegisterGameObject(villager1, null);
         }
     }

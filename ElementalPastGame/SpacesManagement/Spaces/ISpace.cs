@@ -12,8 +12,9 @@ using ElementalPastGame.TileManagement;
 
 namespace ElementalPastGame.SpacesManagement.Spaces
 {
-    public interface ISpace
+    public interface ISpace : IGameObjectModelInteractionDelegate
     {
+        public ISpaceInteractionDelegate interactionDelegate { get; set; }
         public int initialX { get; set; }
         public int initialY { get; set; }
 
@@ -27,6 +28,7 @@ namespace ElementalPastGame.SpacesManagement.Spaces
         /// <param name="CenterY">The y corrdinate of the player's location</param>
         /// <returns></returns>
         public List<IGameObjectModel> GetActiveEntities(int CenterX, int CenterY);
+        public IGameObjectModel? ActiveEntityAt(int x, int y);
         public void RegisterGameObject(IGameObjectModel gameObjectModel, List<EntityBattleModel> encounterEnemies);
         public void MoveGameObject(IGameObjectModel gameObjectModel, Location fromLocation, Location toLocation);
 
@@ -50,5 +52,11 @@ namespace ElementalPastGame.SpacesManagement.Spaces
                                       int leftX, int topY,
                                       bool isCollidable);
         public void UnloadSpace();
+    }
+
+    public interface ISpaceInteractionDelegate
+    {
+        public void ISpaceDidBeginInteractionWithGameObjectModel(ISpace space, IGameObjectModel gameObjectModel);
+        public void ISpaceDidEndInteractionWithGameObjectModel(ISpace space, IGameObjectModel gameObjectModel);
     }
 }

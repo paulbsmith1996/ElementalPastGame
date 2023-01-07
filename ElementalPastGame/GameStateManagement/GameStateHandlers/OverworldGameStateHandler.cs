@@ -14,15 +14,17 @@ using ElementalPastGame.GameStateManagement;
 using ElementalPastGame.GameObject.EntityManagement;
 using ElementalPastGame.SpacesManagement.Spaces;
 using ElementalPastGame.SpacesManagement.TileManagement;
+using System.DirectoryServices.ActiveDirectory;
 
 namespace ElementalPastGame.GameObject.GameStateHandlers
 {
-    public class OverworldGameStateHandler : IGameStateHandler
+    public class OverworldGameStateHandler : IGameStateHandler, ISpaceInteractionDelegate
     {
         public IGameStateHandlerDelegate? gameStateHandlerDelegate { get; set; }
         internal static OverworldGameStateHandler? _instance;
 
         internal bool _isAnimating;
+        internal bool isInteracting { get; set; }
         public bool isAnimating { get { return _isAnimating; } set { _isAnimating = value; } }
         public int CenterX { get; set; }
         public int CenterY { get; set; }
@@ -31,10 +33,12 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         public int PreviousCenterY { get; set; }
 
         public int FramesAnimated { get; set; }
+        internal DateTime lastInteractionTime = DateTime.Now;
 
-        internal ISpace space = Spaces.SpaceForIdentity(Spaces.OVERWORLD);
+        internal ISpace space { get; set; }
 
         internal RenderingModel playerRenderingModel;
+        internal IGameObjectModel? activeInteractionGameObjectModel { get; set; }
 
         public static OverworldGameStateHandler getInstance()
         {
@@ -53,6 +57,9 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             this.CenterY = CommonConstants.GAME_START_LOCATION.Y;
             this.PreviousCenterX = this.CenterX;
             this.PreviousCenterY = this.CenterY;
+
+            this.space = Spaces.SpaceForIdentity(Spaces.OVERWORLD);
+            this.space.interactionDelegate = this;
 
             this.isAnimating = false;
 
@@ -80,7 +87,10 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
 
         public void HandleKeyPressed(char keyChar)
         {
-            // No-op. No need for special behavior here
+            if (this.isInteracting && this.activeInteractionGameObjectModel != null)
+            {
+                this.activeInteractionGameObjectModel.InteractionModel.HandleKeyPressed(keyChar);
+            }
         }
 
         public void HandleKeysDown(List<Keys> keyCodes)
@@ -113,13 +123,14 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
             if (this.space.GetTileAt(this.CenterX, this.CenterY) is PortalTile portalTile)
             {
                 this.space = Spaces.SpaceForIdentity(portalTile.portalSpaceIdentity);
+                this.space.interactionDelegate = this;
                 this.CenterX = portalTile.portalX;
                 this.CenterY = portalTile.portalY;
                 this.PreviousCenterX = this.CenterX;
                 this.PreviousCenterY = this.PreviousCenterY;
             }
 
-            if (keyCodes.Count > 0)
+            if (keyCodes.Count > 0 && !this.isInteracting)
             {
                 Keys lastKey = keyCodes.Last();
                 if (this.ValidateProposedNewLocationForKey(lastKey))
@@ -135,9 +146,20 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     this.UpdateBackgroundWithOffset(0.0);
                     this.UpdateForegroundWithOffset(0.0, 0.0);
                 }
+
+                if (lastKey.Equals(Keys.S))
+                {
+                    this.InteractIfPossible();
+                }
             }
             else
             {
+                if (this.isInteracting && this.activeInteractionGameObjectModel != null)
+                {
+                    if (this.activeInteractionGameObjectModel.InteractionModel != null) {
+                        this.activeInteractionGameObjectModel.InteractionModel.HandleKeysDown(keyCodes);
+                    }
+                }
                 this.UpdateBackgroundWithOffset(0.0);
                 this.UpdateForegroundWithOffset(0.0, 0.0);
             }
@@ -163,6 +185,25 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                     }
                     return;
                 }
+            }
+        }
+
+        internal void InteractIfPossible()
+        {
+            double timeSinceLastInteraction = (DateTime.Now - this.lastInteractionTime).TotalMilliseconds;
+            if (timeSinceLastInteraction < CommonConstants.INTERACTION_BUFFER_TIME)
+            {
+                return;
+            }
+            // Some sneaky math here. Really, it's broken down into centerX + (centerX - previousCenterX). The value in parentheses will eitehr be -1, 0, or 1, and should
+            // equate to the coordinate "in front of" the player
+            int locationX = 2 * this.CenterX - this.PreviousCenterX;
+            int locationY = 2 * this.CenterY - this.PreviousCenterY;
+
+            IGameObjectModel? gameObjectModel = this.space.ActiveEntityAt(locationX, locationY);
+            if (gameObjectModel != null && gameObjectModel.InteractionModel != null)
+            {
+                gameObjectModel.Interact();
             }
         }
 
@@ -263,6 +304,14 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
                 RenderingModel renderingModel = this.CreateRenderingModelForGameObject(gameObjectModel, animationXOffset, animationYOffset);
                 this.UpdateBitmapForRenderingModelForNonnullDelegate(renderingModel);
             }
+
+            if (this.isInteracting && this.activeInteractionGameObjectModel != null && this.activeInteractionGameObjectModel.InteractionModel != null)
+            {
+                foreach (RenderingModel renderingModel in this.activeInteractionGameObjectModel.InteractionModel.GetRenderingModels())
+                {
+                    this.UpdateBitmapForRenderingModelForNonnullDelegate(renderingModel);
+                }
+            }
             DateTime endUpdateForeground = DateTime.Now;
             double timeToUpdateForeground = (endUpdateForeground - startUpdateForeground).TotalMilliseconds;
             Console.WriteLine(timeToUpdateForeground);
@@ -330,6 +379,21 @@ namespace ElementalPastGame.GameObject.GameStateHandlers
         public void TransitionToGameState(GameState state, Dictionary<String, Object> transitionDictionary)
         {
             // So far we just no-op here
+        }
+
+        // ISpaceInteractionDelegate
+
+        public void ISpaceDidBeginInteractionWithGameObjectModel(ISpace space, IGameObjectModel gameObjectModel)
+        {
+            this.isInteracting = true;
+            this.activeInteractionGameObjectModel = gameObjectModel;
+        }
+
+        public void ISpaceDidEndInteractionWithGameObjectModel(ISpace space, IGameObjectModel gameObjectModel)
+        {
+            this.isInteracting = false;
+            this.activeInteractionGameObjectModel = null;
+            this.lastInteractionTime = DateTime.Now;
         }
     }
 }

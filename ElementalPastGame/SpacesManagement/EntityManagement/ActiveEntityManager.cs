@@ -31,12 +31,9 @@ namespace ElementalPastGame.GameObject.EntityManagement
             {
                 for (int YCoordinate = CenterY - CommonConstants.TILE_VIEW_DISTANCE - 1; YCoordinate <= CenterY + CommonConstants.TILE_VIEW_DISTANCE + 1; YCoordinate++)
                 {
-                    Location location = new() { X = XCoordinate, Y = YCoordinate };
-                    IGameObjectModel? gameObjectModel = EntitiesByLocation.GetValueOrDefault(location);
-                    if (gameObjectModel != null && !deadEntityIDs.Contains(gameObjectModel.EntityID))
+                    IGameObjectModel? gameObjectModel = this.ActiveEntityAt(XCoordinate, YCoordinate);
+                    if (gameObjectModel != null)
                     {
-                        // TODO: needed for loading
-                        gameObjectModel.LoadIfNeeded();
                         activeEntities.Add(gameObjectModel);
                         previousActiveEntityModels.Remove(gameObjectModel);
                     }
@@ -48,6 +45,20 @@ namespace ElementalPastGame.GameObject.EntityManagement
             }
             previousActiveEntityModels = activeEntities;
             return activeEntities;
+        }
+
+        public IGameObjectModel? ActiveEntityAt(int x, int y)
+        {
+            Location location = new() { X = x, Y = y };
+            IGameObjectModel? gameObjectModel = EntitiesByLocation.GetValueOrDefault(location);
+            if (gameObjectModel != null && !deadEntityIDs.Contains(gameObjectModel.EntityID))
+            {
+                // TODO: needed for loading
+                gameObjectModel.LoadIfNeeded();
+                return gameObjectModel;
+            }
+
+            return null;
         }
 
         public bool IsCollidableEntityPresent(int x, int y)

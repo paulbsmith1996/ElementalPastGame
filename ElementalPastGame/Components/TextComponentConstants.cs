@@ -10,6 +10,7 @@ namespace ElementalPastGame.Components
     public static class TextComponentConstants
     {
         public static int TEXT_INSET = 10;
+        public static int TEXT_VERTICAL_SPACING = 3;
 
         public static int FONT_SIZE = 12;
 

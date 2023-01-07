@@ -13,7 +13,7 @@ namespace ElementalPastGame.GameObject.Enemies
 {
     public class Goblin : GameObjectModel, IGameObjectModel
     {
-        public Goblin(ISpace space, int X, int Y, MovementType movementType) : base(EntityType.Goblin, space, X, Y, movementType, false, true, false)
+        public Goblin(ISpace space, int X, int Y, MovementType movementType) : base(EntityType.Goblin, space, X, Y, movementType, false, true)
         {
         }
     }

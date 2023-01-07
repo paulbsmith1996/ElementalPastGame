@@ -15,7 +15,7 @@ namespace ElementalPastGame.SpacesManagement.Spaces
 {
     public abstract class Space : ISpace
     {
-
+        public ISpaceInteractionDelegate interactionDelegate { get; set; }
         public int initialX { get; set; }
         public int initialY { get; set; }
 
@@ -62,7 +62,12 @@ namespace ElementalPastGame.SpacesManagement.Spaces
             return this.activeEntityManager.GetActiveEntities(CenterX, CenterY);
         }
 
-        public void RegisterGameObject(IGameObjectModel gameObjectModel, List<EntityBattleModel> encounterEnemies)
+        public IGameObjectModel? ActiveEntityAt(int x, int y)
+        {
+            return this.activeEntityManager.ActiveEntityAt(x, y);
+        }
+
+        public void RegisterGameObject(IGameObjectModel gameObjectModel, List<EntityBattleModel> encounterEnemies=null)
         {
             this.activeEntityManager.RegisterGameObject(gameObjectModel, encounterEnemies);
         }
@@ -119,6 +124,22 @@ namespace ElementalPastGame.SpacesManagement.Spaces
         {
             this.activeEntityManager.Unload();
             this.tileMapManager.Unload();
+        }
+
+        public void IGameObjectModelDidBeginInteraction(IGameObjectModel gameObjectModel)
+        {
+            if (this.interactionDelegate != null)
+            {
+                this.interactionDelegate.ISpaceDidBeginInteractionWithGameObjectModel(this, gameObjectModel);
+            }
+        }
+
+        public void IGameObjectModelDidEndInteraction(IGameObjectModel gameObjectModel)
+        {
+            if (this.interactionDelegate != null)
+            {
+                this.interactionDelegate.ISpaceDidEndInteractionWithGameObjectModel(this, gameObjectModel);
+            }
         }
     }
 }

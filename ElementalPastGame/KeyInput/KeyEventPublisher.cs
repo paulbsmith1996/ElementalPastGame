@@ -42,7 +42,7 @@ namespace ElementalPastGame.KeyInput
 
         public void PublishKeysDown(List<Keys> keyCodes)
         {
-            foreach (IKeyEventSubscriber subscriber in this.subscribers)
+            foreach (IKeyEventSubscriber subscriber in this.subscribers.ToList())
             {
                 subscriber.HandleKeysDown(keyCodes);
             }
@@ -50,10 +50,15 @@ namespace ElementalPastGame.KeyInput
 
         public void PublishKeyPressed(char keyChar)
         {
-            foreach (IKeyEventSubscriber subscriber in this.subscribers)
+            foreach (IKeyEventSubscriber subscriber in this.subscribers.ToList())
             {
                 subscriber.HandleKeyPressed(keyChar);
             }
+        }
+
+        public List<IKeyEventSubscriber> CurrentSubscribers()
+        {
+            return this.subscribers;
         }
     }
 }

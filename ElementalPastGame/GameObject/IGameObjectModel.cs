@@ -30,7 +30,8 @@ namespace ElementalPastGame.GameObject
         {
             Wander,
             SetMoves,
-            Aggressive
+            Aggressive,
+            Still
         }
 
         /// <summary>
@@ -47,7 +48,8 @@ namespace ElementalPastGame.GameObject
         public GameObjectSize Size { get; set; }
 
         public Boolean IsCollidable { get; set; }
-        public bool IsInteractable { get; set; }
+        public EntityInteractionModel? InteractionModel { get; }
+        public IGameObjectModelInteractionDelegate interactionDelegate { get; set; }
         public bool IsHostile { get; set; }
 
         /// <summary>
@@ -64,9 +66,17 @@ namespace ElementalPastGame.GameObject
 
         public EntityImageData imageData { get; set; }
 
+        public void Interact();
+
         public void LoadIfNeeded();
         public void Unload();
         public void MoveTo(int NewX, int NewY, bool animated);
         public void UpdateModelForNewRunloop();
+    }
+
+    public interface IGameObjectModelInteractionDelegate
+    {
+        public void IGameObjectModelDidBeginInteraction(IGameObjectModel gameObjectModel);
+        public void IGameObjectModelDidEndInteraction(IGameObjectModel gameObjectModel);
     }
 }

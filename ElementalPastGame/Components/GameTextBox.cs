@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,10 +25,11 @@ namespace ElementalPastGame.Components
         public Color backgroundColor { get; set; }
         public Font font { get; set; }
 
-        public String text;
+        public List<String> text;
 
         internal bool hasPointer;
         internal Bitmap pointerBitmap;
+        internal RenderingModel? backgroundRenderingModel { get; set; }
 
         internal DateTime animationStartTime;
         internal int pointerAnimationX;
@@ -37,7 +39,7 @@ namespace ElementalPastGame.Components
 
         internal RenderingModel? staticRenderingModel { get; set; }
 
-        public GameTextBox(String text,
+        public GameTextBox(List<String> text,
                             int x,
                             int y,
                             int width,
@@ -48,7 +50,7 @@ namespace ElementalPastGame.Components
         {
         }
 
-        public GameTextBox (String text, 
+        public GameTextBox (List<String> text, 
                             int x, 
                             int y, 
                             int width, 
@@ -59,7 +61,7 @@ namespace ElementalPastGame.Components
         {
         }
 
-        public GameTextBox(String text, 
+        public GameTextBox(List<String> text, 
                            String fontFamily, 
                            int fontSize, 
                            int x, 
@@ -72,7 +74,42 @@ namespace ElementalPastGame.Components
         {
         }
 
-        public GameTextBox(String text, 
+        public GameTextBox(String text,
+                            int x,
+                            int y,
+                            int width,
+                            int height) : this(new List<String>() { text }, TextComponentConstants.FONT_FAMILY, TextComponentConstants.FONT_SIZE,
+                                               x, y, width, height, TextComponentConstants.CORNER_RADIUS,
+                                               TextComponentConstants.DEFAULT_BORDER_COLOR,
+                                               TextComponentConstants.DEFAULT_BACKGROUND_COLOR, true)
+        {
+        }
+
+        public GameTextBox(String text,
+                            int x,
+                            int y,
+                            int width,
+                            int height, bool hasPointer) : this(new List<String>() { text }, TextComponentConstants.FONT_FAMILY, TextComponentConstants.FONT_SIZE,
+                                               x, y, width, height, TextComponentConstants.CORNER_RADIUS,
+                                               TextComponentConstants.DEFAULT_BORDER_COLOR,
+                                               TextComponentConstants.DEFAULT_BACKGROUND_COLOR, hasPointer)
+        {
+        }
+
+        public GameTextBox(String text,
+                           String fontFamily,
+                           int fontSize,
+                           int x,
+                           int y,
+                           int width,
+                           int height,
+                           bool hasPointer) : this(new List<String>() { text }, fontFamily, fontSize, x, y, width, height,
+                                              TextComponentConstants.CORNER_RADIUS, TextComponentConstants.DEFAULT_BORDER_COLOR,
+                                              TextComponentConstants.DEFAULT_BACKGROUND_COLOR, hasPointer)
+        {
+        }
+
+        public GameTextBox(List<String> text, 
                            String fontFamily, 
                            int fontSize, 
                            int x, 
@@ -104,12 +141,68 @@ namespace ElementalPastGame.Components
 
         public List<RenderingModel> getRenderingModels()
         {
-            List<RenderingModel> renderingModels = new List<RenderingModel>() { this.GetStaticRenderingModel() };
+            List<RenderingModel> renderingModels = new List<RenderingModel>() { this.GetBackgroundRenderingModel(), this.GetTextRenderingModel() };
             if (this.hasPointer)
             {
                 renderingModels.Add(this.GetPointerRenderingModel());
             }
             return renderingModels;
+        }
+
+        internal RenderingModel GetTextRenderingModel()
+        {
+            Bitmap bitmap = new Bitmap(this.width, this.height);
+            Graphics g = Graphics.FromImage(bitmap);
+            int textHeight = (int)g.MeasureString("fq", this.font).Height;
+            int textY = TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET;
+            foreach (String line in text)
+            {
+                g.DrawString(line, this.font, Brushes.White, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET);
+                textY += textHeight + TextComponentConstants.TEXT_VERTICAL_SPACING;
+            }
+
+            return new()
+            {
+                X = this.x,
+                Y = this.y,
+                Width = this.width,
+                Height = this.height,
+                Bitmaps = new() { bitmap }
+            };
+        }
+
+        internal RenderingModel GetBackgroundRenderingModel()
+        {
+            if (this.backgroundRenderingModel != null)
+            {
+                return (RenderingModel)this.backgroundRenderingModel;
+            }
+
+            Bitmap bitmap = new Bitmap(this.width, this.height);
+
+            Graphics g = Graphics.FromImage(bitmap);
+
+            Rectangle bounds = new Rectangle(0, 0, this.width, this.height);
+            Brush brush = new SolidBrush(this.backgroundColor);
+            g.FillPath(brush, GraphicsPathsFactory.RoundedRect(bounds, this.cornerRadius));
+
+            Pen borderPen = new Pen(this.borderColor);
+            borderPen.Width = 4;
+            int halfBorderPenWidth = (int)borderPen.Width / 2;
+            Rectangle borderBounds = new Rectangle(halfBorderPenWidth, halfBorderPenWidth, this.width - 2 * halfBorderPenWidth, this.height - 2 * halfBorderPenWidth);
+            g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(borderBounds, this.cornerRadius - halfBorderPenWidth));
+
+            Rectangle innerBorderBounds = new Rectangle(TextComponentConstants.INNER_RECT_OFFSET, TextComponentConstants.INNER_RECT_OFFSET, this.width - 2 * TextComponentConstants.INNER_RECT_OFFSET, this.height - 2 * TextComponentConstants.INNER_RECT_OFFSET);
+            g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(innerBorderBounds, this.cornerRadius));
+
+            return new()
+            {
+                X = this.x,
+                Y = this.y,
+                Width = this.width,
+                Height = this.height,
+                Bitmaps = new() { bitmap}
+            };
         }
 
         internal RenderingModel GetStaticRenderingModel()
@@ -136,7 +229,12 @@ namespace ElementalPastGame.Components
             Rectangle innerBorderBounds = new Rectangle(TextComponentConstants.INNER_RECT_OFFSET, TextComponentConstants.INNER_RECT_OFFSET, this.width - 2 * TextComponentConstants.INNER_RECT_OFFSET, this.height - 2 * TextComponentConstants.INNER_RECT_OFFSET);
             g.DrawPath(borderPen, GraphicsPathsFactory.RoundedRect(innerBorderBounds, this.cornerRadius));
 
-            g.DrawString(this.text, this.font, Brushes.White, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET);
+            int textHeight = (int)g.MeasureString("fq", this.font).Height;
+            int textY = TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET;
+            foreach (String line in text) {
+                g.DrawString(line, this.font, Brushes.White, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET, TextComponentConstants.INNER_RECT_OFFSET + TextComponentConstants.TEXT_INSET);
+                textY += textHeight + TextComponentConstants.TEXT_VERTICAL_SPACING;
+            }
 
             List<Bitmap> bitmaps = new()
             {

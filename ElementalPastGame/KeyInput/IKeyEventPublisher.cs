@@ -14,6 +14,7 @@ namespace ElementalPastGame.KeyInput
         public void AddIKeyEventSubscriber(IKeyEventSubscriber subscriber);
         public void RemoveIKeyEventSubscriber(IKeyEventSubscriber subscriber);
         public void MakeExclusiveIKeySubscriber(IKeyEventSubscriber subscriber);
+        public List<IKeyEventSubscriber> CurrentSubscribers();
 
     }
 

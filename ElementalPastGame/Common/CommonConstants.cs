@@ -44,5 +44,9 @@ namespace ElementalPastGame.Common
         //public static Keys SELECT_KEY_BINDING = Keys.S;
         //public static char BACK_KEY_BINDING_CHAR = 'd';
         //public static Keys BACK_KEY_BINDING = Keys.D;
+
+        // Buffer time between interactions so that exiting out of an interaction doesn't immediately
+        // start a new interaction with the same game object model.
+        public static double INTERACTION_BUFFER_TIME = 250;
     }
 }

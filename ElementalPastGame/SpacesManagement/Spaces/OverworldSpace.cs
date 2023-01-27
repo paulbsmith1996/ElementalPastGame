@@ -181,13 +181,26 @@ namespace ElementalPastGame.SpacesManagement.Spaces
 
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.DirtGrass2), 811, 881, 819, 881);
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Dirt), 811, 838, 850, 880);
-            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 812, 840, 848, 878);
 
+            // Roads
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 814, 878, 816, 889);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 817, 878, 828, 879);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 825, 872, 828, 878);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 815, 869, 815, 873);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 815, 869, 822, 869);
+            this.SetTileAtLocation(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 820, 870);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 823, 865, 830, 871);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 825, 855, 828, 864);
+
+            // ??
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.CornerBR), 820, 881);
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.Horizontal), 821, 881, 880, 881);
 
             // House 1
             this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseDoor, Spaces.HOUSE_1, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1), 815, 874);
+
+            // House 2
+            this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseDoor, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1), 820, 871);
         }
     }
 }

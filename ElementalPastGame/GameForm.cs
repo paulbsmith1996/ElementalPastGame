@@ -23,6 +23,7 @@ namespace ElementalPastGame
             pictureBox.Location = new Point(10, 10);
             this.Controls.Add(pictureBox);
             this.pictureBoxManager.AddIPictureBoxManagerObserver(this);
+            //AudioPlayer.PlaySoundWithName(AudioMapping.AMBIENT);
             // TODO: should be able to remove this line later. Just need it to start up the Player model here
             GameStateManager.getInstance();
         }

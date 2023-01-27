@@ -15,11 +15,13 @@ namespace ElementalPastGame.Audio
 
         public static String HEAL_SOUND = "Heal_Sound";
         public static String AMBIENT = "Ambient";
+        public static String TEST = "Test";
 
         public static Dictionary<String, String> Mapping = new Dictionary<String, String>()
         {
-            { AMBIENT, SoundsLocation + "music.ogg" },
+            { AMBIENT, SoundsLocation + "BackingTrack.wav" },
             { HEAL_SOUND, SoundsLocation + "healingsound.ogg" },
+            { TEST, SoundsLocation + "test.wav" },
         };
 
         public static String? SoundLocationForName(String name)

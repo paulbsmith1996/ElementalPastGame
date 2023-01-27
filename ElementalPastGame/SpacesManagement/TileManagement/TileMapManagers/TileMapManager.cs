@@ -138,6 +138,31 @@ namespace ElementalPastGame.SpacesManagement.TileManagement.TileMapManagers
             }
         }
 
+        public void SetEnterableBuildingOnTiles(String foregroundImageName, String backgroundImageName, 
+                                                int x, int y,
+                                                int width, int height,
+                                                int entranceX, int entranceY,
+                                                String portalSpaceID, int portalX, int portalY)
+        {
+            Tile[] tiles = TileFactory.TilesForImage(foregroundImageName, backgroundImageName, width, height, true);
+            for (int xIndex = 0; xIndex < width; xIndex++)
+            {
+                for (int yIndex = 0; yIndex < height; yIndex++)
+                {
+                    if (xIndex == entranceX && yIndex == height - 1 - entranceY)
+                    {
+                        Tile entranceTile = tiles[yIndex * width + xIndex];
+                        PortalTile portalTile = new PortalTile(entranceTile.ImageNames, portalSpaceID, portalX, portalY);
+                        this.SetTileAtLocation(portalTile, x + (width - xIndex - 1), y + (height - yIndex - 1));
+                    }
+                    else
+                    {
+                        this.SetTileAtLocation(tiles[yIndex * width + xIndex], x + (width - xIndex - 1), y + (height - yIndex - 1));
+                    }
+                }
+            }
+        }
+
         public void SetChunkToImage(String foregroundImageName, String backgroundImageName,
                                       int imageTileWidth, int imageTileHeight,
                                       int rightX, int bottomY,

@@ -190,17 +190,24 @@ namespace ElementalPastGame.SpacesManagement.Spaces
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 815, 869, 822, 869);
             this.SetTileAtLocation(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 820, 870);
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 823, 865, 830, 871);
-            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 825, 855, 828, 864);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 825, 853, 828, 864);
 
             // ??
             this.SetTileAtLocation(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.CornerBR), 820, 881);
             this.SetChunkToTile(TileFactory.FenceWithBackground(TextureMapping.DirtGrass2, TileOrientation.Horizontal), 821, 881, 880, 881);
 
             // House 1
-            this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseDoor, Spaces.HOUSE_1, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1), 815, 874);
+            this.SetEnterableBuildingOnTiles(TextureMapping.LogCabin, TextureMapping.StoneRoad, 814, 874, 3, 4, 1, 0, Spaces.HOUSE_1, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
 
             // House 2
-            this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseDoor, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1), 820, 871);
+            //this.SetTileAtLocation(TileFactory.PortalTileWithBackground(TextureMapping.HouseDoor, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1), 820, 871);
+            this.SetEnterableBuildingOnTiles(TextureMapping.LogCabin, TextureMapping.StoneRoad, 819, 871, 3, 4, 1, 0, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
+
+            // Decorative houses
+            this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 814, 865, 822, 868, true);
+            this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 813, 853, 823, 861, true);
+            this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 831, 865, 839, 868, true);
+            this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 829, 853, 841, 861, true);
         }
     }
 }

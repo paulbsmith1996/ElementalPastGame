@@ -111,6 +111,14 @@ namespace ElementalPastGame.SpacesManagement.Spaces
             this.tileMapManager.SetImageOnTiles(foregroundImageName, backgroundImageName, x, y, width, height, isCollidable);
         }
 
+        public void SetEnterableBuildingOnTiles(String foregroundImageName, String backgroundImageName,
+                                                int x, int y,
+                                                int width, int height,
+                                                int entranceX, int entranceY,
+                                                String portalSpaceID, int portalX, int portalY)
+        {
+            this.tileMapManager.SetEnterableBuildingOnTiles(foregroundImageName, backgroundImageName, x, y, width, height, entranceX, entranceY, portalSpaceID, portalX, portalY);
+        }
         public void SetChunkToImage(String foregroundImageName, String backgroundImageName,
                                       int imageTileWidth, int imageTileHeight,
                                       int rightX, int bottomY,

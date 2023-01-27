@@ -53,6 +53,8 @@ namespace ElementalPastGame.TileManagement.Utility
         public static String HouseFloor = "House_Floor";
         public static String HouseMat = "House_Mat";
 
+        public static String LogCabin = "Log_Cabin";
+
         public static String Player = "Player";
 
         public static String Goblin = "Goblin";
@@ -100,6 +102,7 @@ namespace ElementalPastGame.TileManagement.Utility
             { HouseDoor, new Bitmap(TexturesLocation + "housedoor.png") },
             { HouseFloor, new Bitmap(TexturesLocation + "floor.png") },
             { HouseMat, new Bitmap(TexturesLocation + "housemat.png") },
+            { LogCabin, new Bitmap(TexturesLocation + "logcabin.png") },
 
             { Goblin, new Bitmap(TexturesLocation + "Goblin.png") },
             { Dead_Goblin, deadGoblin() },

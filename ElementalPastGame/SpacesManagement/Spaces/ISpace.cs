@@ -51,6 +51,11 @@ namespace ElementalPastGame.SpacesManagement.Spaces
                                       int rightX, int bottomY,
                                       int leftX, int topY,
                                       bool isCollidable);
+        public void SetEnterableBuildingOnTiles(String foregroundImageName, String backgroundImageName,
+                                                int x, int y,
+                                                int width, int height,
+                                                int entranceX, int entranceY,
+                                                String portalSpaceID, int portalX, int portalY);
         public void UnloadSpace();
     }
 

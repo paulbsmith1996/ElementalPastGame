@@ -66,7 +66,7 @@ namespace ElementalPastGame.TileManagement.Utility
         public static Dictionary<String, Bitmap> Mapping = new Dictionary<String, Bitmap>() {
             { Blank, new Bitmap(TexturesLocation + "Blank.png") },
             { Dirt, new Bitmap(TexturesLocation + "Dirt.jpg") },
-            { StoneRoad, new Bitmap(TexturesLocation + "stoneroad.png") },
+            { StoneRoad, new Bitmap(TexturesLocation + "cobblestoneroad.png") },
 
             { DirtGrass1, new Bitmap(TexturesLocation + "dirt_grass_1.png") },
             { DirtGrass2, BitmapByApplyingRotateFlip(new Bitmap(TexturesLocation + "dirt_grass_8.png"), RotateFlipType.RotateNoneFlipY) },

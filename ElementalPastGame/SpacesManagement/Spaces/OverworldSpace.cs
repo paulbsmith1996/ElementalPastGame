@@ -181,7 +181,7 @@ namespace ElementalPastGame.SpacesManagement.Spaces
 
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.DirtGrass2), 811, 881, 819, 881);
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.Dirt), 811, 838, 850, 880);
-            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 812, 839, 849, 879);
+            this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 812, 839, 849, 880);
 
             // Roads
             this.SetChunkToTile(TileFactory.TileWithBackground(TextureMapping.StoneRoad), 814, 878, 816, 889);
@@ -209,9 +209,9 @@ namespace ElementalPastGame.SpacesManagement.Spaces
             this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 813, 853, 823, 861, true);
             this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 831, 865, 839, 868, true);
             this.SetChunkToImage(TextureMapping.LogCabin, TextureMapping.StoneRoad, 3, 4, 829, 853, 841, 861, true);
-            this.SetEnterableBuildingOnTiles(TextureMapping.WizardTower, TextureMapping.StoneRoad, 834, 871, 3, 6, 1, 0, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
-            this.SetEnterableBuildingOnTiles(TextureMapping.LogCabin, TextureMapping.StoneRoad, 831, 871, 3, 4, 1, 0, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
-            this.SetEnterableBuildingOnTiles(TextureMapping.LogCabin, TextureMapping.StoneRoad, 837, 871, 3, 4, 1, 0, Spaces.HOUSE_2, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
+            this.SetEnterableBuildingOnTiles(TextureMapping.WizardTower, TextureMapping.StoneRoad, 834, 871, 3, 6, 1, 0, Spaces.WIZARD_TOWER, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
+            this.SetEnterableBuildingOnTiles(TextureMapping.LogCabin, TextureMapping.StoneRoad, 831, 871, 3, 4, 1, 0, Spaces.HOUSE_3, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
+            this.SetEnterableBuildingOnTiles(TextureMapping.LogCabin, TextureMapping.StoneRoad, 837, 871, 3, 4, 1, 0, Spaces.HOUSE_4, SpaceConstants.HOUSE_START_X, SpaceConstants.HOUSE_START_Y + 1);
         }
     }
 }

@@ -64,6 +64,16 @@ namespace ElementalPastGame.Items.Inventory
             return inventory[type] ?? new();
         }
 
+        public List<InventoryItemEntry> AllItemEntries()
+        {
+            List<InventoryItemEntry> entries = new List<InventoryItemEntry>();
+            foreach (List<InventoryItemEntry> itemEntryList in this.inventory.Values)
+            {
+                entries.AddRange(itemEntryList);
+            }
+            return entries;
+        }
+
         internal InventoryItemEntry? GetExistingEntryForItem(IItem item)
         {
             List<InventoryItemEntry> typedItems = inventory[item.type];

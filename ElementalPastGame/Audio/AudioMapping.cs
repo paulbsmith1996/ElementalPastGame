@@ -19,7 +19,7 @@ namespace ElementalPastGame.Audio
 
         public static Dictionary<String, String> Mapping = new Dictionary<String, String>()
         {
-            { AMBIENT, SoundsLocation + "BackingTrack.wav" },
+            { AMBIENT, SoundsLocation + "rippedambient.wav" },
             { HEAL_SOUND, SoundsLocation + "healingsound.ogg" },
             { TEST, SoundsLocation + "test.wav" },
         };

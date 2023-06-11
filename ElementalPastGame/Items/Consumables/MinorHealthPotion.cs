@@ -12,5 +12,7 @@ namespace ElementalPastGame.Items.Consumables
         public ItemType type { get { return ItemType.Consumable; } }
         public int itemID { get { return IItem.MINOR_HEALTH_POTION_ID; } }
         public String displayName { get { return "Minor Health Potion"; } }
+
+        public int basePrice { get { return IItem.MINOR_HEALTH_POTION_PRICE; } }
     }
 }

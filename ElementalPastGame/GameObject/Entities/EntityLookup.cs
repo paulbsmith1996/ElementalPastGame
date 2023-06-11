@@ -71,9 +71,13 @@ namespace ElementalPastGame.GameObject.Entities
                                                               { IMAGE_ID_KEY, TextureMapping.Player }
                             }
             },
-            { EntityType.Villager1, new Dictionary<string, object>() { { NAME_KEY, "Villager" }, 
+            { EntityType.Villager1, new Dictionary<string, object>() { { NAME_KEY, "Villager" },
                                                                        { IMAGE_ID_KEY, TextureMapping.Villager1 }
                             }
+            },
+            { EntityType.BasicMerchant, new Dictionary<string, object>() { { NAME_KEY, "Merchant" }, 
+                                                                           { IMAGE_ID_KEY, TextureMapping.Merchant } 
+                            } 
             },
         };
     }

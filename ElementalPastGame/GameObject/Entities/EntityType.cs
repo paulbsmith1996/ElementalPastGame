@@ -11,6 +11,6 @@ namespace ElementalPastGame.GameObject.Entities
         Goblin,
         Aendon,
         Villager1,
-
+        BasicMerchant,
     }
 }

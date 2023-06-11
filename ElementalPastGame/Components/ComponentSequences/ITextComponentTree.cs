@@ -8,6 +8,8 @@ namespace ElementalPastGame.Components.ComponentSequences
 {
     public interface ITextComponentTree
     {
+        public static String MENU_PREFIX = "<MENU>";
+        public static String MENU_OPTION_DELIMITER = "<OPT>";
         public ITextComponentTree? ChildForKey(string key = "");
         public void SetChildForKey(string key, ITextComponentTree child);
         public void RemoveChildForKey(string key);

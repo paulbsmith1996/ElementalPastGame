@@ -13,12 +13,14 @@ namespace ElementalPastGame.Items
         public int itemID { get; set; }
 
         public String displayName { get; set; }
+        public int basePrice { get; set; }
 
-        public ConcreteItem(String displayName, ItemType type, int itemID)
+        public ConcreteItem(String displayName, ItemType type, int itemID, int basePrice)
         {
             this.type = type;
             this.itemID = itemID;
             this.displayName = displayName;
+            this.basePrice = basePrice;
         }
     }
 }

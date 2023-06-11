@@ -11,7 +11,7 @@ namespace ElementalPastGame.Items.Equipment.Weapons
     public class BronzeDagger : Weapon
     {
 
-        public BronzeDagger() : base("Bronze Dagger", BRONZE_DAGGER_ID, WeaponType.Dagger, BRONZE_DAGGER_BASE_DAMAGE)
+        public BronzeDagger() : base("Bronze Dagger", BRONZE_DAGGER_ID, WeaponType.Dagger, BRONZE_DAGGER_BASE_DAMAGE, IItem.BRONZE_DAGGER_PRICE)
         {
 
         }

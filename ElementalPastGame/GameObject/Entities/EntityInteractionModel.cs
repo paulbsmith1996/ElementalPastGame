@@ -23,7 +23,13 @@ namespace ElementalPastGame.GameObject.Entities
         public EntityInteractionModel(List<String> text)
         {
             this.text = text;
-            this.SetUpTextComponentTree();
+            this.SetUpLinearTextComponentTree();
+        }
+
+        public EntityInteractionModel(ITextComponentTree textComponentTree)
+        {
+            this.interactableTextTree = new InteractableTextComponentTree(textComponentTree);
+            this.interactableTextTree.AddObserver(this);
         }
 
         public void BeginInteraction()
@@ -47,7 +53,7 @@ namespace ElementalPastGame.GameObject.Entities
             return this.interactableTextTree.GetRenderingModels();
         }
 
-        internal void SetUpTextComponentTree()
+        internal void SetUpLinearTextComponentTree()
         {
             if (this.text.Count == 0)
             {
@@ -76,7 +82,7 @@ namespace ElementalPastGame.GameObject.Entities
         public void InteractableTextComponentTreeObserverDidDismiss(InteractableTextComponentTree tree)
         {
             this.EndInteraction();
-            this.SetUpTextComponentTree();
+            this.SetUpLinearTextComponentTree();
         }
 
         public void HandleKeysDown(List<Keys> keyCodes)

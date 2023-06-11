@@ -13,5 +13,7 @@ namespace ElementalPastGame.Items.Consumables
         public int itemID { get { return IItem.HEALTH_POTION_ID; } }
 
         public String displayName {  get { return "Health Potion"; } }
+
+        public int basePrice { get { return IItem.HEALTH_POTION_PRICE; } }
     }
 }

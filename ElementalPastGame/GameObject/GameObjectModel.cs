@@ -23,7 +23,21 @@ namespace ElementalPastGame.GameObject
 
         public long EntityID { get; set; }
         public Boolean IsCollidable { get; set; }
-        public EntityInteractionModel? InteractionModel { get; set; }
+        internal EntityInteractionModel? _interactionModel;
+        public EntityInteractionModel? InteractionModel { get
+            {
+                return _interactionModel;
+            } set {
+                if (_interactionModel != value)
+                {
+                    _interactionModel = value;
+                    if (_interactionModel != null)
+                    {
+                        _interactionModel.interactionDelegate = this;
+                    }
+                }
+            } 
+        }
         public IGameObjectModelInteractionDelegate interactionDelegate { get; set; }
         public bool IsHostile { get; set; }
         public double XAnimationOffset { get; set; }
@@ -60,10 +74,6 @@ namespace ElementalPastGame.GameObject
             this.movementType = movementType;
             this.IsCollidable = isCollidable;
             this.InteractionModel = interactionModel;
-            if (this.InteractionModel != null)
-            {
-                this.InteractionModel.interactionDelegate = this;
-            }
             this.IsHostile = isHostile;
             this.Moves = new();
             this.Location = new Location() { X = X, Y = Y };

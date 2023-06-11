@@ -19,6 +19,8 @@ namespace ElementalPastGame.Items
 
         public String displayName { get; }
 
+        public int basePrice { get; }
+
         //==================================================
         //                   Item IDs
         //==================================================
@@ -33,5 +35,20 @@ namespace ElementalPastGame.Items
         public static int MINOR_HEALTH_POTION_ID = 1000;
         public static int HEALTH_POTION_ID = 1001;
         public static int MAJOR_HEALTH_POTION_ID = 1002;
+
+        //==================================================
+        //                   Item Prices
+        //==================================================
+
+        // Weapon IDs
+        public static int WOOD_SWORD_PRICE = 200;
+        public static int BRONZE_SWORD_PRICE = 500;
+
+        public static int BRONZE_DAGGER_PRICE = 150;
+
+        // Consumable IDs
+        public static int MINOR_HEALTH_POTION_PRICE = 50;
+        public static int HEALTH_POTION_PRICE = 100;
+        public static int MAJOR_HEALTH_POTION_PRICE = 250;
     }
 }

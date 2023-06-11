@@ -36,7 +36,7 @@ namespace ElementalPastGame.Items.Equipment.Weapons
 
         public Dictionary<WeaponAction, double> multipliersForWeaponActions { get; set; }
 
-        public Weapon(String displayName, int itemID, WeaponType weaponType, int baseDamage) : base(displayName, ItemType.Equipment, itemID)
+        public Weapon(String displayName, int itemID, WeaponType weaponType, int baseDamage, int basePrice) : base(displayName, ItemType.Equipment, itemID, basePrice)
         {
             this.weaponType = weaponType;
             this.baseDamage = baseDamage;
